@@ -1,0 +1,108 @@
+/**
+ * Website Repository - Jest Manual Mock
+ *
+ * This mock is automatically used when jest.mock('~/server/domains/website/website.repository') is called.
+ */
+
+import type { Website, WebsiteWithQuestions } from '~/server/domains/website/website.types'
+
+export const mockWebsite: Website = {
+  id: 'website-123',
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  weddingId: 'wedding-123',
+  subUrl: 'johndoeandjanesmith',
+  templateId: null,
+  isPasswordEnabled: false,
+  password: null,
+  isRsvpEnabled: true,
+  coverPhotoUrl: null,
+  headerImageUrl: null,
+  coupleImageUrls: [],
+}
+
+export const mockWebsiteWithQuestions: WebsiteWithQuestions = {
+  ...mockWebsite,
+  generalQuestions: [
+    {
+      id: 'q-1',
+      text: 'Will you be bringing any children under the age of 10?',
+      type: 'Text',
+      isRequired: false,
+      allowOther: false,
+      websiteId: 'website-123',
+      eventId: null,
+      options: [],
+      _count: { answers: 0 },
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+    },
+    {
+      id: 'q-2',
+      text: 'Send a note to the couple?',
+      type: 'Text',
+      isRequired: false,
+      allowOther: false,
+      websiteId: 'website-123',
+      eventId: null,
+      options: [],
+      _count: { answers: 0 },
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+    },
+  ],
+}
+
+export const mockFindById = jest.fn()
+export const mockFindByWeddingId = jest.fn()
+export const mockFindBySubUrl = jest.fn()
+export const mockFindBySubUrlWithQuestions = jest.fn()
+export const mockFindByWeddingIdWithQuestions = jest.fn()
+export const mockCreate = jest.fn()
+export const mockUpsertByWeddingId = jest.fn()
+export const mockUpdate = jest.fn()
+export const mockUpdateRsvpEnabled = jest.fn()
+export const mockUpdateCoverPhoto = jest.fn()
+export const mockUpdateHeaderImage = jest.fn()
+export const mockUpdateCoupleImages = jest.fn()
+export const mockExistsForWedding = jest.fn()
+export const mockIsSubUrlTaken = jest.fn()
+export const mockBelongsToWedding = jest.fn()
+
+export const WebsiteRepository = jest.fn().mockImplementation(() => ({
+  findById: mockFindById,
+  findByWeddingId: mockFindByWeddingId,
+  findBySubUrl: mockFindBySubUrl,
+  findBySubUrlWithQuestions: mockFindBySubUrlWithQuestions,
+  findByWeddingIdWithQuestions: mockFindByWeddingIdWithQuestions,
+  create: mockCreate,
+  upsertByWeddingId: mockUpsertByWeddingId,
+  update: mockUpdate,
+  updateRsvpEnabled: mockUpdateRsvpEnabled,
+  updateCoverPhoto: mockUpdateCoverPhoto,
+  updateHeaderImage: mockUpdateHeaderImage,
+  updateCoupleImages: mockUpdateCoupleImages,
+  existsForWedding: mockExistsForWedding,
+  isSubUrlTaken: mockIsSubUrlTaken,
+  belongsToWedding: mockBelongsToWedding,
+}))
+
+// Helper to reset all mocks
+export const resetMocks = (): void => {
+  mockFindById.mockReset()
+  mockFindByWeddingId.mockReset()
+  mockFindBySubUrl.mockReset()
+  mockFindBySubUrlWithQuestions.mockReset()
+  mockFindByWeddingIdWithQuestions.mockReset()
+  mockCreate.mockReset()
+  mockUpsertByWeddingId.mockReset()
+  mockUpdate.mockReset()
+  mockUpdateRsvpEnabled.mockReset()
+  mockUpdateCoverPhoto.mockReset()
+  mockUpdateHeaderImage.mockReset()
+  mockUpdateCoupleImages.mockReset()
+  mockExistsForWedding.mockReset()
+  mockIsSubUrlTaken.mockReset()
+  mockBelongsToWedding.mockReset()
+  WebsiteRepository.mockClear()
+}

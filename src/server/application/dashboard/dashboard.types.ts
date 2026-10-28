@@ -1,0 +1,128 @@
+/**
+ * Dashboard Application Service - Types
+ *
+ * Types for the dashboard overview data that aggregates multiple domains.
+ */
+
+import type { Gift } from '~/server/domains/gift'
+import type { GuestWithInvitations } from '~/server/domains/guest'
+import type { Household } from '~/server/domains/household'
+import type { MilestoneWithEffectiveStatus } from '~/server/domains/milestone'
+import type { Option, Question } from '~/server/domains/question'
+import type { TaskPriorityQueueResult } from '~/server/domains/task'
+
+/**
+ * Wedding date format
+ */
+export type WeddingDate = {
+  standardFormat?: string
+  numberFormat?: string
+}
+
+/**
+ * Wedding data for dashboard header
+ */
+export type WeddingData = {
+  website?: WebsiteWithQuestions
+  groomFirstName: string | null
+  groomLastName: string | null
+  brideFirstName: string | null
+  brideLastName: string | null
+  date: WeddingDate
+  location?: string | null
+  daysRemaining: number
+}
+
+/**
+ * Website with general questions
+ */
+export type WebsiteWithQuestions = {
+  id: string
+  weddingId: string
+  url: string
+  subUrl: string
+  templateId: string | null
+  isPasswordEnabled: boolean
+  password: string | null
+  coverPhotoUrl: string | null
+  isRsvpEnabled: boolean
+  createdAt: Date
+  updatedAt: Date
+  generalQuestions: QuestionWithRecentAnswer[]
+}
+
+/**
+ * Question with options and recent answer
+ */
+export type QuestionWithRecentAnswer = Question & {
+  options: Option[]
+  _count: { answers: number }
+  recentAnswer: Answer | null
+}
+
+/**
+ * Answer type for recent answers
+ */
+export type Answer = {
+  id: string
+  questionId: string
+  guestId: number
+  guestFirstName: string | null
+  guestLastName: string | null
+  householdId: string
+  response: string
+  createdAt: Date
+}
+
+/**
+ * Household with guests and gifts for dashboard
+ * Extends the domain Household type with populated guests and gifts including event names
+ */
+export type HouseholdWithGuests = Household & {
+  guests: GuestWithInvitations[]
+  gifts: Array<Gift & { event: { name: string } }>
+}
+
+/**
+ * RSVP response statistics
+ */
+export type GuestResponses = {
+  invited: number
+  attending: number
+  declined: number
+  notInvited: number
+}
+
+/**
+ * Event with questions and RSVP statistics
+ */
+export type EventWithStats = {
+  id: string
+  name: string
+  date: Date | null
+  startTime: string | null
+  endTime: string | null
+  venue: string | null
+  attire: string | null
+  description: string | null
+  weddingId: string
+  collectRsvp: boolean
+  createdAt: Date
+  updatedAt: Date
+  questions: QuestionWithRecentAnswer[]
+  guestResponses: GuestResponses
+}
+
+/**
+ * Complete dashboard data
+ */
+export type DashboardData = {
+  weddingData: WeddingData
+  totalGuests: number
+  totalEvents: number
+  tasksDueThisMonth: number
+  taskPriorityQueue: TaskPriorityQueueResult
+  milestones: MilestoneWithEffectiveStatus[]
+  households: HouseholdWithGuests[]
+  events: EventWithStats[]
+}

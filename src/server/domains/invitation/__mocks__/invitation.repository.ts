@@ -1,0 +1,100 @@
+/**
+ * Invitation Repository - Jest Manual Mock
+ *
+ * This mock is automatically used when jest.mock('~/server/domains/invitation/invitation.repository') is called.
+ */
+
+import type { Invitation } from '~/server/domains/invitation/invitation.types'
+
+export const mockInvitation: Invitation = {
+  id: 'inv-123',
+  guestId: 1,
+  eventId: 'event-123',
+  weddingId: 'wedding-123',
+  rsvp: 'Invited',
+  dietaryRestrictions: null,
+  submittedBy: null,
+  submittedAt: null,
+  invitedAt: new Date('2024-01-01'),
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+}
+
+export const mockRsvpStats = {
+  attending: 10,
+  invited: 5,
+  declined: 3,
+  notInvited: 2,
+}
+
+export const mockFindById = jest.fn()
+export const mockFindOrganizationIdByInvitationId = jest.fn()
+export const mockFindByWeddingId = jest.fn()
+export const mockFindByWeddingIdWithGuestTagAlong = jest.fn()
+export const mockFindByEventId = jest.fn()
+export const mockFindByGuestId = jest.fn()
+export const mockCreate = jest.fn()
+export const mockCreateMany = jest.fn()
+export const mockUpdate = jest.fn()
+export const mockDelete = jest.fn()
+export const mockDeleteByGuest = jest.fn()
+export const mockDeleteByGuestExcludingEvents = jest.fn()
+export const mockExists = jest.fn()
+export const mockBelongsToWedding = jest.fn()
+export const mockBelongsToUser = jest.fn()
+export const mockGuestBelongsToWedding = jest.fn()
+export const mockEventBelongsToWedding = jest.fn()
+export const mockUpdateMany = jest.fn()
+export const mockAllBelongToWedding = jest.fn()
+export const mockCountByWeddingAndGuestEventPairs = jest.fn()
+export const mockGetRsvpCountsByEventId = jest.fn()
+
+export const InvitationRepository = jest.fn().mockImplementation(() => ({
+  findById: mockFindById,
+  findOrganizationIdByInvitationId: mockFindOrganizationIdByInvitationId,
+  findByWeddingId: mockFindByWeddingId,
+  findByWeddingIdWithGuestTagAlong: mockFindByWeddingIdWithGuestTagAlong,
+  findByEventId: mockFindByEventId,
+  findByGuestId: mockFindByGuestId,
+  create: mockCreate,
+  createMany: mockCreateMany,
+  update: mockUpdate,
+  updateMany: mockUpdateMany,
+  allBelongToWedding: mockAllBelongToWedding,
+  delete: mockDelete,
+  deleteByGuest: mockDeleteByGuest,
+  deleteByGuestExcludingEvents: mockDeleteByGuestExcludingEvents,
+  exists: mockExists,
+  belongsToWedding: mockBelongsToWedding,
+  belongsToUser: mockBelongsToUser,
+  guestBelongsToWedding: mockGuestBelongsToWedding,
+  eventBelongsToWedding: mockEventBelongsToWedding,
+  countByWeddingAndGuestEventPairs: mockCountByWeddingAndGuestEventPairs,
+  getRsvpCountsByEventId: mockGetRsvpCountsByEventId,
+}))
+
+// Helper to reset all mocks
+export const resetMocks = (): void => {
+  mockFindById.mockReset()
+  mockFindOrganizationIdByInvitationId.mockReset()
+  mockFindByWeddingId.mockReset()
+  mockFindByWeddingIdWithGuestTagAlong.mockReset()
+  mockFindByEventId.mockReset()
+  mockFindByGuestId.mockReset()
+  mockCreate.mockReset()
+  mockCreateMany.mockReset()
+  mockUpdate.mockReset()
+  mockUpdateMany.mockReset()
+  mockAllBelongToWedding.mockReset()
+  mockDelete.mockReset()
+  mockDeleteByGuest.mockReset()
+  mockDeleteByGuestExcludingEvents.mockReset()
+  mockExists.mockReset()
+  mockBelongsToWedding.mockReset()
+  mockBelongsToUser.mockReset()
+  mockGuestBelongsToWedding.mockReset()
+  mockEventBelongsToWedding.mockReset()
+  mockCountByWeddingAndGuestEventPairs.mockReset()
+  mockGetRsvpCountsByEventId.mockReset()
+  InvitationRepository.mockClear()
+}

@@ -1,0 +1,217 @@
+import { memo, useCallback } from 'react'
+
+import { Badge } from '~/components/ui/badge'
+import { Card, CardContent } from '~/components/ui/card'
+import type { HouseholdWithGuests } from '~/server/application/dashboard/dashboard.types'
+
+type GuestCardProps = {
+  household: HouseholdWithGuests
+  onSelectHousehold: (household: HouseholdWithGuests) => void
+  isSelected?: boolean
+  allTags?: Array<{ id: string; name: string; color?: string | null }>
+}
+
+type RsvpSummary = {
+  attending: number
+  invited: number
+  declined: number
+}
+
+const getInitials = (name: string): string => {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
+}
+
+const getLocationLabel = (household: HouseholdWithGuests): string => {
+  const locationParts = [household.city, household.state, household.country].filter(
+    (value): value is string => Boolean(value)
+  )
+
+  if (locationParts.length === 0) return 'Location not set'
+
+  return locationParts.join(', ')
+}
+
+const getHouseholdTags = (
+  household: HouseholdWithGuests,
+  allTags: Array<{ id: string; name: string; color?: string | null }>
+): Array<{ id: string; name: string }> => {
+  const uniqueTagIds = Array.from(
+    new Set(
+      household.guests
+        .flatMap((guest) => guest.guestTags ?? [])
+        .map((guestTag) => guestTag.tagId)
+        .filter(Boolean)
+    )
+  ).slice(0, 2)
+
+  return uniqueTagIds
+    .map((tagId) => allTags.find((t) => t.id === tagId))
+    .filter((t): t is NonNullable<typeof t> => t !== undefined)
+}
+
+const getRsvpSummary = (household: HouseholdWithGuests): RsvpSummary => {
+  // Include all guests — tag-alongs now have invitations for events that allow them
+  return household.guests.reduce<RsvpSummary>(
+    (summary, guest) => {
+      for (const invitation of guest.invitations) {
+        if (invitation.rsvp === 'Attending') {
+          summary.attending += 1
+          continue
+        }
+
+        if (invitation.rsvp === 'Invited') {
+          summary.invited += 1
+          continue
+        }
+
+        if (invitation.rsvp === 'Declined') {
+          summary.declined += 1
+        }
+      }
+
+      return summary
+    },
+    {
+      attending: 0,
+      invited: 0,
+      declined: 0,
+    }
+  )
+}
+
+const getPrimaryGuestName = (household: HouseholdWithGuests): string => {
+  const primaryGuest =
+    household.guests.find((guest) => guest.isPrimaryContact) ?? household.guests[0]
+
+  if (primaryGuest === undefined) return 'Unnamed household'
+
+  return `${primaryGuest.firstName} ${primaryGuest.lastName}`
+}
+
+function GuestCardComponent({
+  household,
+  onSelectHousehold,
+  isSelected = false,
+  allTags = [],
+}: Readonly<GuestCardProps>) {
+  const primaryGuestName = getPrimaryGuestName(household)
+  const invitedGuests = household.guests.filter((guest) => !guest.isTagAlong)
+  const tagAlongCount = household.guests.length - invitedGuests.length
+  const extraGuestsCount = Math.max(household.guests.length - 1, 0)
+  const summaryName =
+    extraGuestsCount > 0 ? `${primaryGuestName} +${extraGuestsCount}` : primaryGuestName
+
+  const rsvpSummary = getRsvpSummary(household)
+  const initials = getInitials(primaryGuestName)
+  const locationLabel = getLocationLabel(household)
+  const householdTags = getHouseholdTags(household, allTags)
+  const visibleTags = householdTags.slice(0, 1)
+  const hiddenTagCount = Math.max(householdTags.length - visibleTags.length, 0)
+  const handleSelect = useCallback(() => {
+    onSelectHousehold(household)
+  }, [household, onSelectHousehold])
+
+  return (
+    <button
+      type='button'
+      className='w-full text-left'
+      aria-label={`Select ${primaryGuestName} household`}
+      onClick={handleSelect}
+    >
+      <Card
+        className={`transition-colors hover:bg-muted/30 ${
+          isSelected
+            ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+            : 'border-border bg-card/90'
+        }`}
+      >
+        <CardContent className='flex flex-col gap-3 p-4'>
+          <div className='flex items-start justify-between gap-3'>
+            <div className='flex min-w-0 items-start gap-2.5'>
+              <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border/80 bg-muted/60 font-mono text-[0.58rem] text-foreground/75 uppercase tracking-wider'>
+                {initials}
+              </span>
+              <div className='min-w-0'>
+                <p className='truncate font-serif text-[1.02rem] text-foreground leading-tight'>
+                  {summaryName}
+                </p>
+                <p className='truncate font-mono text-[0.56rem] text-foreground/55 uppercase tracking-wider'>
+                  {locationLabel}
+                </p>
+              </div>
+            </div>
+            <Badge
+              variant='secondary'
+              className='shrink-0 font-mono text-[0.54rem] uppercase tracking-wider'
+            >
+              Party of {invitedGuests.length}
+              {tagAlongCount > 0 && ` +${tagAlongCount}`}
+            </Badge>
+          </div>
+
+          <div className='flex flex-wrap gap-2 text-xs'>
+            {rsvpSummary.attending > 0 && (
+              <Badge
+                variant='outline'
+                className='border-success/35 bg-success/12 font-normal text-success'
+              >
+                {rsvpSummary.attending} attending
+              </Badge>
+            )}
+            {rsvpSummary.invited > 0 && (
+              <Badge
+                variant='outline'
+                className='border-foreground/20 bg-gold/12 font-normal text-foreground/80'
+              >
+                {rsvpSummary.invited} invited
+              </Badge>
+            )}
+            {rsvpSummary.declined > 0 && (
+              <Badge
+                variant='outline'
+                className='border-destructive/30 bg-destructive/10 font-normal text-destructive'
+              >
+                {rsvpSummary.declined} declined
+              </Badge>
+            )}
+            {visibleTags.map((tag) => (
+              <Badge
+                key={tag.id}
+                variant='outline'
+                className='border-foreground/15 bg-foreground/[0.04] font-normal text-foreground/70'
+              >
+                {tag.name}
+              </Badge>
+            ))}
+            {hiddenTagCount > 0 && (
+              <Badge
+                variant='outline'
+                className='border-foreground/15 bg-foreground/[0.04] font-normal text-foreground/70'
+              >
+                +{hiddenTagCount} tags
+              </Badge>
+            )}
+            {rsvpSummary.attending === 0 &&
+              rsvpSummary.invited === 0 &&
+              rsvpSummary.declined === 0 && (
+                <span className='text-muted-foreground'>No RSVP data</span>
+              )}
+          </div>
+
+          <div className='flex items-center justify-end border-border/80 border-t pt-2'>
+            <span className='font-mono text-[0.56rem] text-foreground/55 uppercase tracking-wider'>
+              View details →
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </button>
+  )
+}
+
+export const GuestCard = memo(GuestCardComponent)

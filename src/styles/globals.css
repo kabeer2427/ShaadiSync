@@ -1,0 +1,437 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Evergreen & Ivory (internal app, auth, marketing). See DESIGN.md §3. */
+    --background: 0.9798 0.0045 78.3;
+    --foreground: 0.2268 0.0041 84.59;
+
+    --card: 1 0 0;
+    --card-foreground: 0.2268 0.0041 84.59;
+
+    --popover: 1 0 0;
+    --popover-foreground: 0.2268 0.0041 84.59;
+
+    --primary: 0.435 0.0541 174.32;
+    --primary-foreground: 1 0 0;
+
+    --secondary: 0.9531 0.0074 80.72;
+    --secondary-foreground: 0.3961 0.0113 78.19;
+
+    --muted: 0.9531 0.0074 80.72;
+    --muted-foreground: 0.5127 0.0125 76.52;
+
+    --accent: 0.9442 0.0109 167.79;
+    --accent-foreground: 0.3744 0.0463 174.11;
+
+    --success: 0.5226 0.0933 160.2;
+    --success-foreground: 1 0 0;
+
+    --destructive: 0.5294 0.1538 32.51;
+    --destructive-foreground: 1 0 0;
+
+    --border: 0.9145 0.0121 79.78;
+    --input: 0.9145 0.0121 79.78;
+    --ring: 0.435 0.0541 174.32;
+
+    --radius: 0.625rem;
+
+    --chart-1: 0.435 0.0541 174.32;
+    --chart-2: 0.6545 0.1045 82.36;
+    --chart-3: 0.7542 0.0751 42.03;
+    --chart-4: 0.8067 0.0367 171.89;
+    --chart-5: 0.4355 0.0894 39.02;
+
+    --sidebar: 0.9531 0.0074 80.72;
+    --sidebar-foreground: 0.2268 0.0041 84.59;
+    --sidebar-primary: 0.435 0.0541 174.32;
+    --sidebar-primary-foreground: 1 0 0;
+    --sidebar-accent: 1 0 0;
+    --sidebar-accent-foreground: 0.2268 0.0041 84.59;
+    --sidebar-border: 0.9145 0.0121 79.78;
+    --sidebar-ring: 0.435 0.0541 174.32;
+
+    /* Supporting accents: gold for small details, blush for Etta suggestions. */
+    --gold: 0.6545 0.1045 82.36;
+    --blush: 0.9295 0.0206 48.49;
+    --blush-foreground: 0.4355 0.0894 39.02;
+
+    /* Legacy dark-surface tokens, kept for old_dashboard and the design-system page. */
+    --sidebar-ink: 0.19 0.022 48;
+    --sidebar-cream: 0.96 0.01 56;
+    --etta-ink: 0.19 0.022 48;
+
+    /* Tailwind's sans/serif/mono families read these. Internally all three are the
+       system UI face; display headings use --font-display. Guest surfaces restore
+       the original stacks below. */
+    --font-ui-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-ui-serif: var(--font-ui-sans);
+    --font-ui-mono: var(--font-ui-sans);
+
+    --font-sans: Montserrat, sans-serif;
+
+    --font-serif: Merriweather, serif;
+
+    --font-mono: Ubuntu Mono, monospace;
+
+    --font-display: var(--font-instrument, "Instrument Serif", serif);
+
+    --shadow-color: hsl(0 0% 0%);
+
+    --shadow-opacity: 0.09;
+
+    --shadow-blur: 12px;
+
+    --shadow-spread: -3px;
+
+    --shadow-offset-x: 0px;
+
+    --shadow-offset-y: 6px;
+
+    --letter-spacing: 0em;
+
+    --spacing: 0.25rem;
+
+    --shadow-2xs: 0px 6px 12px -3px hsl(0 0% 0% / 0.04);
+
+    --shadow-xs: 0px 6px 12px -3px hsl(0 0% 0% / 0.04);
+
+    --shadow-sm: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 1px 2px -4px hsl(0 0% 0% / 0.09);
+
+    --shadow: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 1px 2px -4px hsl(0 0% 0% / 0.09);
+
+    --shadow-md: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 2px 4px -4px hsl(0 0% 0% / 0.09);
+
+    --shadow-lg: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 4px 6px -4px hsl(0 0% 0% / 0.09);
+
+    --shadow-xl: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 8px 10px -4px hsl(0 0% 0% / 0.09);
+
+    --shadow-2xl: 0px 6px 12px -3px hsl(0 0% 0% / 0.22);
+
+    --tracking-normal: 0em;
+  }
+
+  .dark {
+    --background: 0.1875 0.0026 67.67;
+    --foreground: 0.9531 0.0074 80.72;
+
+    --card: 0.245 0.0048 67.6;
+    --card-foreground: 0.9531 0.0074 80.72;
+
+    --popover: 0.245 0.0048 67.6;
+    --popover-foreground: 0.9531 0.0074 80.72;
+
+    --primary: 0.7435 0.0717 170.05;
+    --primary-foreground: 0.2056 0.0178 169.92;
+
+    --secondary: 0.286 0.0061 78.23;
+    --secondary-foreground: 0.8195 0.0141 78.25;
+
+    --muted: 0.286 0.0061 78.23;
+    --muted-foreground: 0.7149 0.0134 75.33;
+
+    --accent: 0.3175 0.0345 171.64;
+    --accent-foreground: 0.8465 0.0559 170.01;
+
+    --success: 0.7548 0.1038 161;
+    --success-foreground: 0.2056 0.0178 169.92;
+
+    --destructive: 0.6714 0.1444 32.51;
+    --destructive-foreground: 0.2056 0.0178 169.92;
+
+    --border: 0.3149 0.0082 75.27;
+    --input: 0.3149 0.0082 75.27;
+    --ring: 0.7435 0.0717 170.05;
+    --chart-1: 0.7435 0.0717 170.05;
+    --chart-2: 0.7348 0.1021 82.33;
+    --chart-3: 0.5358 0.0906 38.9;
+    --chart-4: 0.4884 0.0534 171.27;
+    --chart-5: 0.83 0.0709 42.83;
+    --radius: 0.625rem;
+    --sidebar: 0.2181 0.0041 84.59;
+    --sidebar-foreground: 0.9531 0.0074 80.72;
+    --sidebar-primary: 0.7435 0.0717 170.05;
+    --sidebar-primary-foreground: 0.2056 0.0178 169.92;
+    --sidebar-accent: 0.245 0.0048 67.6;
+    --sidebar-accent-foreground: 0.9531 0.0074 80.72;
+    --sidebar-border: 0.3149 0.0082 75.27;
+    --sidebar-ring: 0.7435 0.0717 170.05;
+    --gold: 0.7348 0.1021 82.33;
+    --blush: 0.2968 0.0288 36.11;
+    --blush-foreground: 0.83 0.0709 42.83;
+    --sidebar-ink: 0.19 0.022 48;
+    --sidebar-cream: 0.96 0.01 56;
+    --etta-ink: 0.19 0.022 48;
+    --font-sans: Montserrat, sans-serif;
+    --font-serif: Merriweather, serif;
+    --font-mono: Ubuntu Mono, monospace;
+    --font-display: var(--font-instrument, "Instrument Serif", serif);
+    --shadow-color: hsl(0 0% 0%);
+    --shadow-opacity: 0.09;
+    --shadow-blur: 12px;
+    --shadow-spread: -3px;
+    --shadow-offset-x: 0px;
+    --shadow-offset-y: 6px;
+    --letter-spacing: 0em;
+    --spacing: 0.25rem;
+    --shadow-2xs: 0px 6px 12px -3px hsl(0 0% 0% / 0.04);
+    --shadow-xs: 0px 6px 12px -3px hsl(0 0% 0% / 0.04);
+    --shadow-sm: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 1px 2px -4px hsl(0 0% 0% / 0.09);
+    --shadow: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 1px 2px -4px hsl(0 0% 0% / 0.09);
+    --shadow-md: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 2px 4px -4px hsl(0 0% 0% / 0.09);
+    --shadow-lg: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 4px 6px -4px hsl(0 0% 0% / 0.09);
+    --shadow-xl: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 8px 10px -4px hsl(0 0% 0% / 0.09);
+    --shadow-2xl: 0px 6px 12px -3px hsl(0 0% 0% / 0.22);
+  }
+
+  /*
+   * Guest-facing surfaces (/w/*) keep the original palette, fonts and component
+   * shapes until the wedding templates are redesigned. Pages opt in with
+   * data-guest-surface; :has() lifts the scope to :root so portalled dialogs and
+   * the page background match too. [data-wedding-template] (set by
+   * TemplateThemeProvider) covers template previews inside the internal app.
+   * Template cssVars still override these inline.
+   */
+  :root:has([data-guest-surface]),
+  [data-wedding-template] {
+    --background: 0.9538 0.016 82.79;
+    --foreground: 0.3353 0.0132 2.7676;
+    --card: 1 0 0;
+    --card-foreground: 0.3353 0.0132 2.7676;
+    --popover: 1 0 0;
+    --popover-foreground: 0.3353 0.0132 2.7676;
+    --primary: 0.7357 0.1641 34.7091;
+    --primary-foreground: 1 0 0;
+    --secondary: 0.9596 0.02 28.9029;
+    --secondary-foreground: 0.5587 0.1294 32.7364;
+    --muted: 0.9656 0.0176 39.4009;
+    --muted-foreground: 0.5534 0.0116 58.0708;
+    --accent: 0.6997 0.0882 84.38;
+    --accent-foreground: 0.3353 0.0132 2.7676;
+    --success: 0.768 0.161 151.95;
+    --success-foreground: 0.985 0.01 151.5;
+    --destructive: 0.6122 0.2082 22.241;
+    --destructive-foreground: 1 0 0;
+    --border: 0.9296 0.037 38.6868;
+    --input: 0.9296 0.037 38.6868;
+    --ring: 0.7357 0.1641 34.7091;
+    --radius: 0.625rem;
+    --chart-1: 0.7357 0.1641 34.7091;
+    --chart-2: 0.8278 0.1131 57.9984;
+    --chart-3: 0.8773 0.0763 54.9314;
+    --chart-4: 0.82 0.1054 40.8859;
+    --chart-5: 0.6368 0.1306 32.0721;
+    --sidebar: 0.9656 0.0176 39.4009;
+    --sidebar-foreground: 0.3353 0.0132 2.7676;
+    --sidebar-primary: 0.7357 0.1641 34.7091;
+    --sidebar-primary-foreground: 1 0 0;
+    --sidebar-accent: 0.8278 0.1131 57.9984;
+    --sidebar-accent-foreground: 0.3353 0.0132 2.7676;
+    --sidebar-border: 0.9296 0.037 38.6868;
+    --sidebar-ring: 0.7357 0.1641 34.7091;
+    --sidebar-ink: 0.19 0.022 48;
+    --sidebar-cream: 0.96 0.01 56;
+    --etta-ink: 0.19 0.022 48;
+    --font-ui-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-ui-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-ui-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  :root.dark:has([data-guest-surface]),
+  .dark [data-wedding-template] {
+    --background: 0.2569 0.0169 352.4042;
+    --foreground: 0.9397 0.0119 51.3156;
+    --card: 0.3184 0.0176 341.4465;
+    --card-foreground: 0.9397 0.0119 51.3156;
+    --popover: 0.3184 0.0176 341.4465;
+    --popover-foreground: 0.9397 0.0119 51.3156;
+    --primary: 0.7357 0.1641 34.7091;
+    --primary-foreground: 1 0 0;
+    --secondary: 0.3637 0.0203 342.2664;
+    --secondary-foreground: 0.9397 0.0119 51.3156;
+    --muted: 0.2848 0.0159 343.6554;
+    --muted-foreground: 0.8378 0.0237 52.6346;
+    --accent: 0.8278 0.1131 57.9984;
+    --accent-foreground: 0.2569 0.0169 352.4042;
+    --success: 0.575 0.135 151.95;
+    --success-foreground: 0.965 0.012 151.5;
+    --destructive: 0.6122 0.2082 22.241;
+    --destructive-foreground: 1 0 0;
+    --border: 0.3637 0.0203 342.2664;
+    --input: 0.3637 0.0203 342.2664;
+    --ring: 0.7357 0.1641 34.7091;
+    --chart-1: 0.7357 0.1641 34.7091;
+    --chart-2: 0.8278 0.1131 57.9984;
+    --chart-3: 0.8773 0.0763 54.9314;
+    --chart-4: 0.82 0.1054 40.8859;
+    --chart-5: 0.6368 0.1306 32.0721;
+    --radius: 0.625rem;
+    --sidebar: 0.2569 0.0169 352.4042;
+    --sidebar-foreground: 0.9397 0.0119 51.3156;
+    --sidebar-primary: 0.7357 0.1641 34.7091;
+    --sidebar-primary-foreground: 1 0 0;
+    --sidebar-accent: 0.8278 0.1131 57.9984;
+    --sidebar-accent-foreground: 0.2569 0.0169 352.4042;
+    --sidebar-border: 0.3637 0.0203 342.2664;
+    --sidebar-ring: 0.7357 0.1641 34.7091;
+    --sidebar-ink: 0.19 0.022 48;
+    --sidebar-cream: 0.96 0.01 56;
+    --etta-ink: 0.19 0.022 48;
+  }
+
+  /* Original component shapes on guest surfaces (see Button, Card, Input, Select, Textarea). */
+  :root:has([data-guest-surface]) .ui-button,
+  [data-wedding-template] .ui-button {
+    border-radius: 2px;
+    font-family: var(--font-ui-mono);
+    font-size: 0.68rem;
+    line-height: inherit;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  :root:has([data-guest-surface]) .ui-card,
+  [data-wedding-template] .ui-card {
+    border-radius: 8px;
+  }
+
+  :root:has([data-guest-surface]) .ui-field,
+  [data-wedding-template] .ui-field {
+    border-radius: 4px;
+  }
+
+  .theme {
+    --font-sans: Montserrat, sans-serif;
+    --font-mono: Ubuntu Mono, monospace;
+    --font-serif: Merriweather, serif;
+    --radius: 0.625rem;
+    --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+    --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+    --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+    --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+    --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+  }
+  body {
+    letter-spacing: var(--tracking-normal);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /*
+   * Route-specific theme scopes are disabled for now.
+   * We are using a single global default theme across the app.
+   *
+   * Disabled selectors:
+   * - .landing-main-theme
+   * - .dark .landing-main-theme
+   * - .dashboard-theme
+   * - .dark .dashboard-theme
+   */
+}
+
+th {
+  text-align: left;
+}
+
+/*
+ * ── Household invite envelope intro ──────────────────────────────────────
+ * A one-time "letter sliding out of an envelope" reveal for the household
+ * invite page (see EnvelopeReveal). Pure GPU-friendly transforms: the top
+ * flap rotates open, then the letter rises out from behind the envelope
+ * front, then we hand off to the real invite card. Colours use the design
+ * tokens so the envelope re-themes with the couple's chosen template.
+ */
+@layer components {
+  .envelope-scene {
+    perspective: 1400px;
+  }
+
+  /* Top flap: hinged at its top edge, swings up and back to open. */
+  .envelope-flap {
+    transform-origin: top center;
+    backface-visibility: hidden;
+    animation: envelope-flap-open 700ms cubic-bezier(0.45, 0.05, 0.2, 1) 250ms both;
+  }
+
+  @keyframes envelope-flap-open {
+    0% {
+      transform: rotateX(0deg);
+      z-index: 30;
+    }
+    49% {
+      z-index: 30;
+    }
+    /* Drop behind the rising letter once the flap is past vertical. */
+    50% {
+      z-index: 1;
+    }
+    100% {
+      transform: rotateX(-180deg);
+      z-index: 1;
+    }
+  }
+
+  /* Letter rises up from inside, emerging at the envelope's centre seam. */
+  .envelope-letter {
+    animation: envelope-letter-rise 950ms cubic-bezier(0.34, 1.3, 0.5, 1) 900ms both;
+  }
+
+  @keyframes envelope-letter-rise {
+    0% {
+      transform: translateY(0) scale(0.97);
+    }
+    100% {
+      transform: translateY(-62%) scale(1);
+    }
+  }
+
+  /* The full-screen intro fades away to reveal the real card beneath. */
+  .envelope-overlay {
+    animation: envelope-overlay-out 500ms ease-in 1850ms both;
+  }
+
+  @keyframes envelope-overlay-out {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  /* Real invite card eases in as the intro overlay fades out. */
+  .envelope-reveal-card {
+    animation: envelope-card-in 600ms cubic-bezier(0.22, 1, 0.36, 1) 1900ms both;
+  }
+
+  @keyframes envelope-card-in {
+    0% {
+      opacity: 0;
+      transform: translateY(28px) scale(0.985);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .envelope-flap,
+    .envelope-letter,
+    .envelope-overlay,
+    .envelope-reveal-card {
+      animation: none !important;
+    }
+  }
+}

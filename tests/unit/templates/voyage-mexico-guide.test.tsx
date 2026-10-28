@@ -1,0 +1,169 @@
+import { render, screen, within } from '@testing-library/react'
+
+import { VoyageHome } from '~/templates/voyage/components/home'
+import { VoyageMexicoCity } from '~/templates/voyage/components/mexico-city'
+import {
+  VoyageExploreMexico,
+  VoyagePracticalInfo,
+  VoyageZocalo,
+} from '~/templates/voyage/components/mexico-guide'
+
+const baseWedding = {
+  groomFirstName: 'John',
+  groomLastName: 'Doe',
+  brideFirstName: 'Jane',
+  brideLastName: 'Smith',
+  date: { standardFormat: 'May 30, 2027', numberFormat: '5/30/2027' },
+  daysRemaining: 100,
+  events: [],
+  sections: [],
+  website: {
+    headerImageUrl: null,
+    coverPhotoUrl: null,
+    isRsvpEnabled: false,
+    coupleImageUrls: [],
+    introText: '',
+  },
+}
+
+describe('VoyageZocalo', () => {
+  it('renders the walkable Centro Histórico sights with their walking distance', () => {
+    render(<VoyageZocalo />)
+
+    expect(screen.getByRole('heading', { name: 'Welcome to Puebla' })).toBeInTheDocument()
+    expect(screen.getByText('Catedral de Puebla')).toBeInTheDocument()
+    expect(screen.getByText('Capilla del Rosario')).toBeInTheDocument()
+    expect(screen.getByText('Biblioteca Palafoxiana')).toBeInTheDocument()
+    expect(screen.getAllByText(/min walk/).length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('renders the eat & drink and short-drive lists', () => {
+    render(<VoyageZocalo />)
+
+    expect(screen.getByText('Eat & Drink')).toBeInTheDocument()
+    expect(screen.getByText('Mole poblano')).toBeInTheDocument()
+    expect(screen.getByText('Worth the Short Drive')).toBeInTheDocument()
+    expect(screen.getByText(/^Cholula/)).toBeInTheDocument()
+  })
+
+  it('keeps museum notes local and moves airport advice to Travel', () => {
+    render(<VoyageZocalo />)
+
+    expect(screen.getByText('Good to Know')).toBeInTheDocument()
+    expect(screen.queryByText('Getting here from the airport')).toBeNull()
+    expect(screen.getByText('A word on Mondays')).toBeInTheDocument()
+    // Museo Amparo is the exception to the Monday rule; guests need both facts.
+    expect(screen.getByText(/closes on Tuesday/)).toBeInTheDocument()
+    expect(screen.getByText(/Closed Tuesdays, not Mondays/)).toBeInTheDocument()
+  })
+
+  // The side artwork is positioned against the section, so below 2xl it lands
+  // on top of the centred max-w-6xl copy column rather than in the margin.
+  it('keeps the decorative artwork out of the copy column below 2xl', () => {
+    const { container } = render(<VoyageZocalo />)
+
+    const decor = container.querySelector('[aria-hidden="true"][class*="absolute"]')
+    expect(decor).not.toBeNull()
+    expect(decor?.className).toContain('2xl:block')
+    expect(decor?.className).not.toContain('lg:block')
+    // And the copy is layered above it either way.
+    expect(container.querySelector('.z-10')).not.toBeNull()
+  })
+
+  it('exposes a #zocalo anchor for the nav', () => {
+    const { container } = render(<VoyageZocalo />)
+
+    expect(container.querySelector('#zocalo')).not.toBeNull()
+  })
+})
+
+describe('VoyageExploreMexico', () => {
+  it('renders every recommended destination with its highlights', () => {
+    render(<VoyageExploreMexico />)
+
+    expect(screen.getByRole('heading', { name: 'Where to Go in Mexico' })).toBeInTheDocument()
+    for (const name of [
+      'Mexico City',
+      'Oaxaca City',
+      'Puerto Escondido',
+      'San Miguel de Allende',
+    ]) {
+      const card = screen.getByRole('heading', { name }).closest('article')
+      expect(card).not.toBeNull()
+      expect(within(card as HTMLElement).getAllByRole('listitem').length).toBeGreaterThan(2)
+    }
+  })
+
+  it('tells guests how to get to each destination', () => {
+    render(<VoyageExploreMexico />)
+
+    expect(screen.getAllByText(/Getting there/).length).toBe(4)
+  })
+
+  it('exposes an #explore-mexico anchor for the nav', () => {
+    const { container } = render(<VoyageExploreMexico />)
+
+    expect(container.querySelector('#explore-mexico')).not.toBeNull()
+  })
+})
+
+describe('VoyageHome Mexico guide', () => {
+  it('links to focused guide pages instead of rendering both on home', () => {
+    const { container } = render(<VoyageHome path='/w/x' weddingData={baseWedding as never} />)
+
+    expect(container.querySelector('#zocalo')).toBeNull()
+    expect(container.querySelector('#explore-mexico')).toBeNull()
+    expect(screen.getAllByRole('link', { name: 'Explore Mexico' })[0]).toHaveAttribute(
+      'href',
+      '/w/x/mexico'
+    )
+    expect(screen.getAllByRole('link', { name: 'Explore Puebla' })[0]).toHaveAttribute(
+      'href',
+      '/w/x/puebla'
+    )
+  })
+})
+
+it('keeps general packing guidance separate from the dedicated transfer section', () => {
+  render(<VoyagePracticalInfo />)
+  expect(screen.queryByText('Getting here from the airport')).toBeNull()
+  expect(screen.getByText('What to pack')).toBeInTheDocument()
+  expect(screen.queryByText('A word on Mondays')).toBeNull()
+})
+
+describe('VoyageMexicoCity', () => {
+  it('renders neighbourhood cards with collapsed culture and food recommendations', () => {
+    render(<VoyageMexicoCity />)
+
+    for (const name of [
+      'Chapultepec & Polanco',
+      'Centro Histórico',
+      'Paseo de la Reforma',
+      'Coyoacán',
+      'Teotihuacán',
+      'San Ángel',
+    ]) {
+      expect(screen.getByRole('heading', { name })).toBeInTheDocument()
+    }
+
+    const chapultepecCard = screen
+      .getByRole('heading', { name: 'Chapultepec & Polanco' })
+      .closest('article') as HTMLElement
+    const centroCard = screen
+      .getByRole('heading', { name: 'Centro Histórico' })
+      .closest('article') as HTMLElement
+    const culture = within(chapultepecCard).getByText('Culture').closest('details')
+    const food = within(centroCard).getByText('Food').closest('details')
+
+    expect(culture).not.toBeNull()
+    expect(food).not.toBeNull()
+    expect(culture).not.toHaveAttribute('open')
+    expect(food).not.toHaveAttribute('open')
+    expect(
+      within(culture as HTMLElement).getByText('Museo Tamayo — Contemporary art museum')
+    ).toBeInTheDocument()
+    expect(
+      within(food as HTMLElement).getByText('El Cardenal — Traditional Mexican restaurant')
+    ).toBeInTheDocument()
+  })
+})

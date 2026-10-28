@@ -1,0 +1,1166 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Core: Wedding is the root entity
+model Wedding {
+  id                       String        @id @default(uuid())
+  organizationId           String?       @unique
+  organization             Organization? @relation("WeddingOrganization", fields: [organizationId], references: [id])
+  groomFirstName           String
+  groomLastName            String
+  brideFirstName           String
+  brideLastName            String
+  enabledAddOns            String[]      @default([]) // e.g., ["website", "tasks", "gifts"]
+  selfFillToken            String?       @unique // Unique token for self-fill guest registration link
+  selfFillTokenGeneratedAt DateTime? // When the current token was generated (enables expiry)
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+
+  // User relationships (many-to-many through UserWedding)
+  userWeddings UserWedding[]
+
+  // Core relationships
+  events      Event[]
+  guests      Guest[]
+  households  Household[]
+  invitations Invitation[]
+  guestTags   GuestTag[]
+
+  // Seating chart
+  seatingTables SeatingTable[]
+
+  // Add-on relationships
+  website    Website?
+  vendors    Vendor[]
+  tasks      Task[]
+  milestones Milestone[]
+
+  // Budgeting
+  budget           Budget?
+  budgetCategories BudgetCategory[]
+  budgetExpenses   BudgetExpense[]
+
+  // Etta AI agent
+  ettaActor       EttaActor?
+  ettaSuggestions EttaSuggestion[]
+  ettaMemories    EttaMemory[]
+  auditLogs       AuditLog[]
+  guestQuestions  GuestQuestion[]
+  faqs            Faq[]
+  notifications   Notification[]
+  householdNotes  HouseholdNote[]
+  vendorNotes     VendorNote[]
+  vendorCategoryConfigs VendorCategoryConfig[]
+
+  // Messaging (Telegram bot, future: WhatsApp)
+  messagingIdentities    MessagingIdentity[]
+  messagingPairingTokens MessagingPairingToken[]
+  chatMessages           ChatMessage[]
+
+  @@index([selfFillToken, selfFillTokenGeneratedAt])
+}
+
+// Join table: Allows multiple users per wedding (co-management)
+model UserWedding {
+  id        String  @id @default(uuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weddingId String
+  wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  // Role for future access control (e.g., "owner", "member", "viewer")
+  role String @default("owner")
+
+  // Indicates if this is the primary/creator user
+  isPrimary Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, weddingId])
+  @@index([userId])
+  @@index([weddingId])
+}
+
+// Add-on: Website (guest-facing wedding website)
+model Website {
+  id                String     @id @default(uuid())
+  weddingId         String     @unique
+  wedding           Wedding    @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  subUrl            String     @unique
+  templateId        String?
+  isPasswordEnabled Boolean    @default(false)
+  password          String?
+  isRsvpEnabled     Boolean    @default(true)
+  coverPhotoUrl     String?
+  headerImageUrl    String?
+  coupleImageUrls   String[]   @default([])
+  generalQuestions  Question[] @relation(name: "Website_Questions")
+  websiteSections   WebsiteSection[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([weddingId])
+}
+
+enum WebsiteSectionType {
+  HOME
+  OUR_STORY
+  TIMELINE
+  DESTINATION
+  EXPERIENCES
+  WEDDING_PARTY
+  TRAVEL
+  FAQ
+  REGISTRY
+  SAVE_THE_DATE
+  INVITATION
+}
+
+model WebsiteSection {
+  id        String             @id @default(uuid())
+  websiteId String
+  website   Website            @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  type      WebsiteSectionType
+  isEnabled Boolean            @default(true)
+  position  Int
+  content   Json
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@unique([websiteId, type])
+  @@index([websiteId, position])
+}
+
+// model StoryItem {
+//     id             Int          @id @default(autoincrement())
+//     photoUrl       String
+//     title          String
+//     text           String
+//     homePageItemId Int
+//     homePageItem   HomePageItem @relation(fields: [homePageItemId], references: [id])
+
+//     @@index([homePageItemId])
+// }
+
+// model HomePageItem {
+//     id        Int         @id @default(autoincrement())
+//     websiteId String
+//     title     String
+//     textBlock String
+//     photoUrl  String
+//     gifUrl    String
+//     story     StoryItem[]
+// }
+
+// Better Auth Tables
+model User {
+  id            String   @id
+  name          String?
+  email         String   @unique @db.VarChar(255)
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Custom fields for your app
+  websiteUrl     String? @db.VarChar(255)
+  groomFirstName String?
+  groomLastName  String?
+  brideFirstName String?
+  brideLastName  String?
+
+  sessions                    Session[]
+  accounts                    Account[]
+  userWeddings                UserWedding[]
+  members                     Member[]
+  sentOrganizationInvitations OrganizationInvitation[] @relation("OrganizationInvitationInviter")
+  vendorRatings  VendorRating[]
+}
+
+model Session {
+  id                   String   @id
+  expiresAt            DateTime
+  token                String   @unique
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  activeOrganizationId String?
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+// Better Auth Organization Plugin Tables
+model Organization {
+  id        String   @id
+  name      String
+  slug      String   @unique
+  logo      String?
+  metadata  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members                 Member[]
+  organizationinvitations OrganizationInvitation[]
+  weddings                Wedding[]                @relation("WeddingOrganization")
+
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}
+
+model OrganizationInvitation {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String       @default("pending")
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  inviterId      String
+  inviter        User         @relation("OrganizationInvitationInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([inviterId])
+  @@map("invitation")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+}
+
+// Core: Household groups guests together (families, couples, singles)
+model Household {
+  id        String  @id @default(uuid())
+  weddingId String
+  wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  // Mailing address for physical invitations
+  address1 String?
+  address2 String?
+  city     String?
+  state    String?
+  zipCode  String?
+  country  String?
+
+  // Likelihood of attending (1=Unlikely, 2=Not Sure, 3=Maybe, 4=Likely, 5=Very Likely)
+  likelihoodOfAttending Int?
+
+  // General notes about the household
+  notes String?
+
+  // Short opaque code for the household's save-the-date / invite link, e.g.
+  // "js-4f9k2c". Looked up directly instead of verifying a signed token so the
+  // link stays short; nullable because a code is only assigned the first time
+  // an invite link is generated.
+  inviteCode           String?   @unique
+  inviteCodeExpiresAt  DateTime?
+
+  // Relations
+  guests         Guest[]          @relation(name: "Household_Guests")
+  gifts          Gift[]           @relation(name: "Household_Gifts")
+  answers        Answer[]         @relation(name: "Household_Answers")
+  optionReponses OptionResponse[] @relation(name: "Household_OptionResponses")
+  householdNotes HouseholdNote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([weddingId])
+}
+
+// NOTE: Contact info (email, phone) lives on Guest, not Household
+
+model Gift {
+  householdId    String
+  household      Household @relation(name: "Household_Gifts", fields: [householdId], references: [id], onDelete: Cascade)
+  eventId        String
+  event          Event     @relation(name: "Event_Gifts", fields: [eventId], references: [id], onDelete: Cascade)
+  description    String?
+  thankyou       Boolean   @default(false)
+  thankYouSentAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@id(name: "GiftId", [householdId, eventId])
+  @@index([householdId])
+  @@index([eventId])
+}
+
+// Core: Individual guests (always belong to a household)
+model Guest {
+  id        Int     @id @default(autoincrement())
+  weddingId String
+  wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String
+  email     String? // Individual contact for notifications
+  phone     String? // Individual contact for WhatsApp/SMS
+
+  // Every guest belongs to a household (required)
+  householdId String
+  household   Household @relation(name: "Household_Guests", fields: [householdId], references: [id], onDelete: Cascade)
+
+  // Primary contact for the household (who manages RSVPs)
+  isPrimaryContact Boolean @default(false)
+
+  // Guest classification
+  ageGroup            GuestAgeGroup?       @default(ADULT)
+  isTagAlong          Boolean              @default(false) // Tags along with household but not formally invited
+  guestTagAssignments GuestTagAssignment[] @relation(name: "Guest_GuestTagAssignments")
+
+  // Relations
+  invitations     Invitation[]     @relation(name: "Guest_Invitations")
+  optionResponses OptionResponse[] @relation(name: "Guest_OptionResponses")
+  answers         Answer[]         @relation(name: "Guest_Answers")
+  guestQuestions  GuestQuestion[]
+  seatAssignments SeatAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // not supported in postgres - TODO: ensure rsvp search functionality is unaffected
+  // @@fulltext([firstName])
+  // @@fulltext([lastName])
+
+  @@unique([weddingId, email]) // Prevent duplicate email registrations per wedding (NULLs excluded)
+  @@index([weddingId])
+  @@index([householdId])
+}
+
+// Core: Wedding events (ceremony, reception, etc.)
+model Event {
+  id        String  @id @default(uuid())
+  weddingId String
+  wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  name           String
+  date           DateTime? @db.Date
+  startTime      String?
+  endTime        String?
+  venue          String?
+  attire         String?
+  description    String?
+  collectRsvp    Boolean   @default(false)
+  allowTagAlongs Boolean   @default(false)
+
+  // Relations
+  invitations Invitation[] @relation(name: "Event_Invitations")
+  gifts       Gift[]       @relation(name: "Event_Gifts")
+  questions   Question[]   @relation(name: "Event_Questions")
+  tasks       Task[]
+
+  seatingTables   SeatingTable[]
+  seatAssignments SeatAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // subEvents   SubEvent[]   @relation(name: "Event_SubEvent")
+
+  @@unique([weddingId, id])
+  @@index([weddingId])
+}
+
+// model SubEvent {
+//     id          String    @id @default(uuid())
+//     name        String
+//     date        DateTime? @db.Date
+//     startTime   String?
+//     endTime     String?
+//     venue       String?
+//     attire      String?
+//     description String?
+//     eventId     String
+//     event       Event     @relation(name: "Event_SubEvent", fields: [eventId], references: [id], onDelete: Cascade)
+
+//     @@index([eventId])
+// }
+
+// website relations are the general questions
+model Question {
+  id         String   @id @default(uuid())
+  eventId    String?
+  event      Event?   @relation(name: "Event_Questions", fields: [eventId], references: [id], onDelete: Cascade)
+  websiteId  String?
+  website    Website? @relation(name: "Website_Questions", fields: [websiteId], references: [id], onDelete: Cascade)
+  text       String
+  //   type       String // idk what this is for yet tbh ['Custom', 'Kids', 'RSVPNote']
+  type       String // ['Text', 'Option']
+  isRequired Boolean  @default(false)
+  allowOther Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  options    Option[] @relation(name: "Question_Options")
+  answers    Answer[] @relation(name: "Question_Answers")
+
+  @@index([eventId])
+  @@index([websiteId])
+}
+
+model Option {
+  id              String           @id @default(uuid())
+  responseCount   Int              @default(0)
+  text            String
+  description     String
+  question        Question         @relation(name: "Question_Options", fields: [questionId], references: [id], onDelete: Cascade)
+  questionId      String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  optionResponses OptionResponse[] @relation(name: "Option_OptionResponses")
+
+  @@index([questionId])
+}
+
+// for counting the number of guests that selected an option?
+model OptionResponse {
+  questionId     String
+  option         Option     @relation(name: "Option_OptionResponses", fields: [optionId], references: [id], onDelete: Cascade)
+  optionId       String
+  guest          Guest?     @relation(name: "Guest_OptionResponses", fields: [guestId], references: [id], onDelete: Cascade)
+  guestId        Int
+  household      Household? @relation(name: "Household_OptionResponses", fields: [householdId], references: [id], onDelete: Cascade)
+  householdId    String
+  guestFirstName String?
+  guestLastName  String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@id(name: "optionResponseId", [questionId, guestId, householdId])
+  @@index([questionId])
+  @@index([optionId])
+  @@index([guestId])
+  @@index([householdId])
+}
+
+model Answer {
+  response       String
+  question       Question   @relation(name: "Question_Answers", fields: [questionId], references: [id], onDelete: Cascade)
+  questionId     String
+  guest          Guest?     @relation(name: "Guest_Answers", fields: [guestId], references: [id], onDelete: Cascade)
+  guestId        Int
+  household      Household? @relation(name: "Household_Answers", fields: [householdId], references: [id], onDelete: Cascade)
+  householdId    String
+  guestFirstName String?
+  guestLastName  String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@id(name: "answerId", [questionId, guestId, householdId])
+  @@index([guestId])
+  @@index([householdId])
+  @@index([questionId])
+}
+
+// Core: Invitations are per-guest, per-event (not per household)
+model Invitation {
+  id        String  @id @default(uuid())
+  weddingId String
+  wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  guestId Int
+  guest   Guest @relation(name: "Guest_Invitations", fields: [guestId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   Event  @relation(name: "Event_Invitations", fields: [eventId], references: [id], onDelete: Cascade)
+
+  // RSVP data
+  rsvp                String  @default("Invited") // 'Invited', 'Attending', 'Declined', 'Not Invited'
+  dietaryRestrictions String? // Per-guest dietary needs
+
+  // Tracking
+  submittedBy Int? // Which guest actually submitted (usually primary contact)
+  submittedAt DateTime?
+  invitedAt   DateTime  @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([guestId, eventId])
+  @@index([weddingId])
+  @@index([guestId])
+  @@index([eventId])
+}
+
+// Seating chart: a table placed on an event's floor plan
+model SeatingTable {
+  id        String  @id @default(uuid())
+  weddingId String
+  wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  eventId   String
+  event     Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  name     String
+  shape    SeatingTableShape @default(ROUND)
+  capacity Int
+
+  // Top-left corner on the floor plan canvas, in pixels
+  positionX Int @default(0)
+  positionY Int @default(0)
+
+  seatAssignments SeatAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([weddingId])
+  @@index([eventId])
+}
+
+// Seating chart: a guest seated at a table. eventId is denormalized from the
+// table so a guest can only be seated once per event.
+model SeatAssignment {
+  id      String       @id @default(uuid())
+  tableId String
+  table   SeatingTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  guestId Int
+  guest   Guest        @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  eventId String
+  event   Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([guestId, eventId])
+  @@index([tableId])
+  @@index([eventId])
+}
+
+enum SeatingTableShape {
+  ROUND
+  RECTANGULAR
+}
+
+// Enum: Guest age groups for planning purposes (meals, activities, etc.)
+enum GuestAgeGroup {
+  INFANT // 0-2 years
+  CHILD // 3-12 years
+  TEEN // 13-17 years
+  ADULT // 18+ years
+}
+
+// User-defined tags for organizing and filtering guests
+model GuestTag {
+  id                  String               @id @default(uuid())
+  weddingId           String
+  wedding             Wedding              @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  name                String
+  color               String? // Hex color for UI badge display
+  guestTagAssignments GuestTagAssignment[] @relation(name: "GuestTag_GuestTagAssignments")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@unique([weddingId, name]) // Prevent duplicate tag names per wedding
+  @@index([weddingId])
+}
+
+// Join table: Many-to-many relationship between Guests and GuestTags
+model GuestTagAssignment {
+  id         String   @id @default(uuid())
+  guestId    Int
+  guest      Guest    @relation(name: "Guest_GuestTagAssignments", fields: [guestId], references: [id], onDelete: Cascade)
+  guestTagId String
+  guestTag   GuestTag @relation(name: "GuestTag_GuestTagAssignments", fields: [guestTagId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([guestId, guestTagId]) // Prevent duplicate tag assignments
+  @@index([guestId])
+  @@index([guestTagId])
+}
+
+// Enum: Vendor service categories
+enum VendorCategory {
+  VENUE
+  CATERING
+  PHOTOGRAPHER
+  VIDEOGRAPHER
+  MUSIC
+  FLOWERS
+  ACCOMMODATION
+  OTHER
+}
+
+enum TaskCategory {
+  VENUE
+  VENDORS
+  ATTIRE
+  STATIONERY
+  GUESTS
+  LEGAL
+  CEREMONY
+  RECEPTION
+  BEAUTY
+  HONEYMOON
+  BUDGET
+  OTHER
+}
+
+enum MilestoneCategory {
+  SETUP
+  VENDORS
+  INVITATIONS
+  LEGAL
+  FINALE
+}
+
+enum MilestoneOverrideStatus {
+  attested
+  dismissed
+}
+
+// Enum: Vendor selection lifecycle status
+enum VendorStatus {
+  NOT_AVAILABLE
+  DECLINED
+  IN_REVIEW
+  PRE_SELECTED
+  IN_NEGOTIATION
+  SELECTED
+}
+
+enum QuoteType {
+  FLAT_FEE
+  PER_GUEST
+}
+
+// Add-on: Vendor tracking per wedding
+model Vendor {
+  id        String  @id @default(uuid())
+  weddingId String
+  wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  category  VendorCategory
+  name      String
+  location  String?
+  website   String?
+  instagram String?
+  status    VendorStatus   @default(IN_REVIEW)
+
+  // Main point of contact
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  notes        String?
+  contacted    Boolean @default(false)
+  customFields Json?
+
+  quotes      VendorQuote[]
+  tasks       Task[]
+  ratings     VendorRating[]
+  vendorNotes VendorNote[]
+  images      VendorImage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([weddingId, id])
+  @@index([weddingId])
+  @@index([weddingId, category])
+  @@index([weddingId, category, createdAt])
+}
+
+model Milestone {
+  id                 String                   @id @default(uuid())
+  weddingId          String
+  wedding            Wedding                  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  key                String
+  title              String
+  category           MilestoneCategory
+  position           Int
+  targetDate         DateTime?                @db.Date
+  userOverrideStatus MilestoneOverrideStatus?
+  attestedAt         DateTime?
+  dismissedAt        DateTime?
+  tasks              Task[]
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  @@unique([weddingId, key])
+  @@unique([weddingId, id])
+  @@index([weddingId])
+  @@index([weddingId, category, position])
+  @@index([weddingId, userOverrideStatus])
+  @@index([weddingId, targetDate])
+}
+
+model Task {
+  id                  String       @id @default(uuid())
+  weddingId           String
+  wedding             Wedding      @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  eventId             String
+  event               Event        @relation(fields: [weddingId, eventId], references: [weddingId, id], onDelete: NoAction)
+  vendorId            String?
+  vendor              Vendor?      @relation(fields: [weddingId, vendorId], references: [weddingId, id], onDelete: NoAction)
+  milestoneId         String?
+  milestone           Milestone?   @relation(fields: [weddingId, milestoneId], references: [weddingId, id], onDelete: NoAction)
+  seedKey             String?
+  title               String
+  category            TaskCategory
+  monthsBeforeWedding Int
+  dueDate             DateTime?    @db.Date
+  description         String?
+  notes               String?
+  isDefault           Boolean      @default(false)
+  position            Int          @default(0)
+  completed           Boolean      @default(false)
+  completedAt         DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@unique([weddingId, seedKey])
+  @@index([weddingId])
+  @@index([eventId])
+  @@index([weddingId, eventId])
+  @@index([vendorId])
+  @@index([weddingId, vendorId])
+  @@index([milestoneId])
+  @@index([weddingId, milestoneId])
+  @@index([weddingId, category, completed, position])
+  @@index([weddingId, eventId, completed, dueDate])
+  @@index([weddingId, monthsBeforeWedding, position])
+  @@index([weddingId, completed, completedAt])
+}
+
+// Per-user star rating for a vendor (nullable presence: missing row == unrated)
+model VendorRating {
+  id        String   @id @default(uuid())
+  vendorId  String
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Star value: integer 1-5 enforced via DB CHECK constraint and app validators
+  stars     Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([vendorId, userId])
+  @@index([vendorId])
+  @@index([userId])
+}
+
+// Quotes submitted by a vendor for a wedding
+model VendorQuote {
+  id       String @id @default(uuid())
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  price     Decimal   @db.Decimal(10, 2)
+  quoteType QuoteType @default(FLAT_FEE)
+  quoteDate DateTime  @db.Date
+  notes     String?
+
+  files VendorQuoteFile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vendorId])
+}
+
+model VendorNote {
+  id        String   @id @default(uuid())
+  vendorId  String   @map("vendor_id")
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  weddingId String   @map("wedding_id")
+  wedding   Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  message   String
+  actorType String   @default("couple") @map("actor_type")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([vendorId, createdAt(sort: Desc)])
+  @@index([weddingId])
+  @@map("vendor_notes")
+}
+
+model VendorCategoryConfig {
+  id               String         @id @default(uuid())
+  weddingId        String?        @map("wedding_id")
+  wedding          Wedding?       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  category         VendorCategory
+  fieldDefinitions Json           @map("field_definitions")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  @@unique([weddingId, category])
+  @@index([category])
+  @@index([weddingId])
+  @@map("vendor_category_configs")
+}
+
+// Files attached to a vendor quote (stored via Vercel Blob)
+model VendorQuoteFile {
+  id      String      @id @default(uuid())
+  quoteId String
+  quote   VendorQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  name String // Original file name
+  url  String // Vercel Blob file URL (also used for deletion)
+  key  String // Vercel Blob pathname
+  size Int // File size in bytes
+
+  createdAt DateTime @default(now())
+
+  @@index([quoteId])
+}
+
+model VendorImage {
+  id       String @id @default(uuid())
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  url       String
+  key       String
+  size      Int
+  name      String
+  isPrimary Boolean @default(false)
+  order     Int     @default(0)
+  source    String  @default("manual")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vendorId])
+  @@index([vendorId, isPrimary])
+}
+
+// ─── Budgeting ───────────────────────────────────────────────────────────────
+
+// Singleton per wedding: holds the couple's overall target budget.
+// Categories and expenses are tracked separately so the target can differ
+// from the sum of per-section budgets.
+model Budget {
+  id          String  @id @default(uuid())
+  weddingId   String  @unique @map("wedding_id")
+  wedding     Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  // Overall target budget for the whole wedding
+  targetTotal Decimal @default(0) @db.Decimal(12, 2) @map("target_total")
+
+  // ISO 4217 currency code every amount on this wedding is tracked in.
+  // No conversion is supported yet.
+  currency String @default("USD")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // weddingId is already @unique, which provides its own index.
+  @@map("budgets")
+}
+
+// A budget "section" (e.g. Venue, Catering). Holds the planned amount for the
+// section; actual spend is derived from its expenses.
+model BudgetCategory {
+  id        String  @id @default(uuid())
+  weddingId String  @map("wedding_id")
+  wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  name          String
+  plannedAmount Decimal @default(0) @db.Decimal(12, 2) @map("planned_amount")
+  position      Int     @default(0)
+
+  expenses BudgetExpense[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([weddingId])
+  @@index([weddingId, position])
+  @@map("budget_categories")
+}
+
+// An actual spend line item within a category. Deposits that are refundable
+// after the event are flagged so net cost can be computed separately from
+// gross spend.
+model BudgetExpense {
+  id         String         @id @default(uuid())
+  weddingId  String         @map("wedding_id")
+  wedding    Wedding        @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  categoryId String         @map("category_id")
+  category   BudgetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  description String
+  // Estimated/quoted cost for this line, used for planning before it is paid.
+  estimatedAmount Decimal @default(0) @db.Decimal(12, 2) @map("estimated_amount")
+  // Amount actually paid (money out of pocket)
+  amount     Decimal @default(0) @db.Decimal(12, 2)
+
+  // Deposit tracking. A refundable deposit is expected back after the event;
+  // refundedAt is set once the refund has been received.
+  isDeposit    Boolean   @default(false) @map("is_deposit")
+  isRefundable Boolean   @default(false) @map("is_refundable")
+  refundedAt   DateTime? @map("refunded_at")
+
+  // When this payment is due (drives the upcoming-payments schedule).
+  dueAt  DateTime? @db.Date @map("due_at")
+  paidAt DateTime? @db.Date @map("paid_at")
+  notes  String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([weddingId])
+  @@index([categoryId])
+  @@map("budget_expenses")
+}
+
+// ─── Etta AI Agent ───────────────────────────────────────────────────────────
+
+// System actor provisioned per wedding for the Etta AI agent
+model EttaActor {
+  id            String    @id @default(uuid())
+  weddingId     String    @unique @map("wedding_id")
+  wedding       Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  actorType     String    @default("etta") @map("actor_type")
+  permissions   String[]  @default([])
+  provisionedAt DateTime  @default(now()) @map("provisioned_at")
+  lastActiveAt  DateTime? @map("last_active_at")
+  revokedAt     DateTime? @map("revoked_at")
+
+  suggestions EttaSuggestion[]
+
+  @@map("etta_actors")
+}
+
+// T1/T2 pending actions proposed by Etta, shown in dashboard for couple approval
+model EttaSuggestion {
+  id            String    @id @default(uuid())
+  weddingId     String    @map("wedding_id")
+  wedding       Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  actorId       String    @map("actor_id")
+  actor         EttaActor @relation(fields: [actorId], references: [id])
+  actionType    String    @map("action_type")
+  tier          String // 'T1' | 'T2'
+  payload       Json
+  summary       String
+  status        String    @default("pending") // pending | approved | dismissed | executed
+  chatMessageId String?   @map("chat_message_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  resolvedAt    DateTime? @map("resolved_at")
+  resolvedBy    String?   @map("resolved_by")
+
+  @@index([weddingId, status])
+  @@index([createdAt(sort: Desc)])
+  @@map("etta_suggestions")
+}
+
+// Semantic memory store for long-term couple preferences and decisions
+// The embedding column (vector(1536)) is managed via raw SQL / pgvector, not Prisma
+model EttaMemory {
+  id        String   @id @default(uuid())
+  weddingId String   @map("wedding_id")
+  wedding   Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([weddingId])
+  @@map("etta_memory")
+}
+
+// Unified audit trail for every action by couple, Etta, or guest
+model AuditLog {
+  id              String   @id @default(uuid())
+  weddingId       String   @map("wedding_id")
+  wedding         Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  actorId         String   @map("actor_id")
+  actorType       String   @map("actor_type") // 'etta' | 'couple' | 'guest'
+  action          String
+  resourceType    String   @map("resource_type")
+  resourceId      String?  @map("resource_id")
+  tier            String? // 'T0' | 'T1' | 'T2'
+  payloadSnapshot Json?    @map("payload_snapshot")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([weddingId, createdAt(sort: Desc)])
+  @@index([actorId])
+  @@map("audit_log")
+}
+
+// Guest questions flagged by Etta Concierge for couple to answer
+model GuestQuestion {
+  id         String    @id @default(uuid())
+  weddingId  String    @map("wedding_id")
+  wedding    Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  guestId    Int       @map("guest_id")
+  guest      Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  question   String
+  context    String?
+  answered   Boolean   @default(false)
+  answer     String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  answeredAt DateTime? @map("answered_at")
+
+  @@index([weddingId, answered])
+  @@map("guest_questions")
+}
+
+// Couple-authored FAQ entries surfaced to Etta Concierge for guest queries
+model Faq {
+  id        String   @id @default(uuid())
+  weddingId String   @map("wedding_id")
+  wedding   Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String
+  published Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([weddingId, published])
+  @@map("faqs")
+}
+
+// In-app notifications for the couple
+model Notification {
+  id        String   @id @default(uuid())
+  weddingId String   @map("wedding_id")
+  wedding   Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  type      String // 'guest_rsvp' | 'guest_question' | 'suggestion'
+  payload   Json
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([weddingId, read])
+  @@map("notifications")
+}
+
+// Communication log: manual notes/outreach entries per household
+// System events (invitation sent, RSVP received, etc.) are derived from existing tables at query time
+model HouseholdNote {
+  id          String    @id @default(uuid())
+  householdId String    @map("household_id")
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  weddingId   String    @map("wedding_id")
+  wedding     Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  message     String
+  actorType   String    @default("couple") @map("actor_type") // 'couple' | 'etta'
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([householdId, createdAt(sort: Desc)])
+  @@index([weddingId])
+  @@map("household_notes")
+}
+
+// ─── Messaging (Telegram bot; future: WhatsApp) ──────────────────────────────
+
+// Linked external chat (one per paired Telegram chat)
+model MessagingIdentity {
+  id               String        @id @default(uuid())
+  weddingId        String        @map("wedding_id")
+  wedding          Wedding       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  channel          String // 'telegram' (future: 'whatsapp')
+  externalChatId   String        @map("external_chat_id")
+  externalUserId   String?       @map("external_user_id")
+  displayName      String?       @map("display_name")
+  linkedByUserId   String        @map("linked_by_user_id") // app user who paired it; authz runs as this user
+  linkedAt         DateTime      @default(now()) @map("linked_at")
+  revokedAt        DateTime?     @map("revoked_at")
+  pendingInvokeSeq Int           @default(0) @map("pending_invoke_seq")
+  messages         ChatMessage[]
+
+  @@unique([channel, externalChatId])
+  @@index([weddingId])
+  @@map("messaging_identities")
+}
+
+// Short-lived pairing token (deep link into Telegram -> /start <token>)
+model MessagingPairingToken {
+  id              String    @id @default(uuid())
+  weddingId       String    @map("wedding_id")
+  wedding         Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  channel         String
+  token           String    @unique
+  createdByUserId String    @map("created_by_user_id")
+  expiresAt       DateTime  @map("expires_at")
+  consumedAt      DateTime? @map("consumed_at")
+  consumedChatId  String?   @map("consumed_chat_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([weddingId])
+  @@map("messaging_pairing_tokens")
+}
+
+// Audit log of every inbound/outbound chat message. Session slice (last 30-min gap or 10 msgs)
+// is fed to Etta; older rows remain for debugging + cron summarisation.
+model ChatMessage {
+  id                String            @id @default(uuid())
+  identityId        String            @map("identity_id")
+  identity          MessagingIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  // Denormalized from identity.weddingId for efficient cascade deletes and wedding-wide queries.
+  weddingId         String            @map("wedding_id")
+  wedding           Wedding           @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  role              String // 'user' | 'assistant'
+  content           String
+  attachmentUrl     String?           @map("attachment_url")
+  attachmentName    String?           @map("attachment_name")
+  externalMessageId String?           @map("external_message_id")
+  summarizedAt      DateTime?         @map("summarized_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
+
+  @@unique([identityId, externalMessageId])
+  @@index([identityId, createdAt])
+  @@index([identityId, summarizedAt])
+  @@index([weddingId])
+  @@map("chat_messages")
+}
+
+// Simple Postgres-backed rolling rate limit bucket (shared by all channels).
+model RateLimitBucket {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  count       Int      @default(0)
+  windowStart DateTime @map("window_start")
+
+  @@index([windowStart])
+  @@map("rate_limit_buckets")
+}

@@ -1,0 +1,564 @@
+# DESIGN.md — OSWP Design System
+
+> This document is the authoritative design reference for OSWP (Open Source Wedding Planning). It defines visual language, interaction principles, component usage, and UX decisions. Every new feature must map back here.
+
+---
+
+## 1. Design Philosophy
+
+OSWP is built for couples planning one of the most personal events of their lives. The design must feel **warm without being saccharine**, **calm without being cold**, and **efficient without being clinical**.
+
+Three words describe the intended feeling: **joyful clarity**.
+
+- **Joyful**: Design elements carry the warmth of a special occasion. Colours, typography, and spacing should feel celebratory — but never kitsch.
+- **Clarity**: Couples face genuine complexity (guest lists, vendor coordination, timelines). The UI reduces cognitive load at every step. No unnecessary chrome, no ambiguous states.
+- **Calm**: Planning is stressful. The platform should actively counter that stress. Ample whitespace, clear hierarchy, and decisive defaults remove friction rather than add to it.
+
+These three qualities must be checked against every new screen, component, and interaction pattern before shipping.
+
+---
+
+## 2. Brand Voice in UI
+
+OSWP's UI copy should feel like a **thoughtful friend who has done this before** — not a corporate tool, not a generic assistant. This applies to labels, empty states, error messages, and AI-generated text.
+
+| Tone | ✅ Do | ❌ Avoid |
+|------|-------|---------|
+| Warm | "Your guests are waiting to hear from you" | "No RSVPs submitted" |
+| Direct | "Add your first event" | "No events found. Please create an event to continue." |
+| Celebratory | "You're 80% of the way there!" | "8 of 10 tasks complete" |
+| Honest | "Etta isn't sure about this one — want to review?" | "Error: confidence below threshold" |
+
+---
+
+## 3. Colour System
+
+### 3.1 Token Architecture
+
+All colours are defined as OKLCH CSS custom properties. Tailwind consumes them via `oklch(var(--token) / <alpha-value>)`. Never use hardcoded hex or rgb values in components — always reference a semantic token.
+
+### 3.2 Semantic Tokens
+
+The internal app (dashboard and planning pages), auth pages and marketing site use the **Evergreen & Ivory** palette: an ivory canvas, white surfaces, near-black ink and a single deep evergreen for decisions and progress. Values live in `src/styles/globals.css`; hex equivalents are given for reference.
+
+#### Light Mode
+
+| Token | OKLCH Value | Hex | Intended Use |
+|-------|-------------|-----|--------------|
+| `--background` | `0.9798 0.0045 78.3` | `#FAF8F5` | Page background: ivory |
+| `--foreground` | `0.2268 0.0041 84.59` | `#1D1C1A` | Body text: warm near-black ink |
+| `--card` / `--popover` | `1 0 0` | `#FFFFFF` | Cards, menus, dialogs |
+| `--primary` | `0.435 0.0541 174.32` | `#2E5B4F` | Primary actions, active states, progress: evergreen |
+| `--primary-foreground` | `1 0 0` | `#FFFFFF` | Text on primary (7.7:1) |
+| `--secondary` | `0.9531 0.0074 80.72` | `#F2EFEA` | Secondary surfaces, chips, tags |
+| `--secondary-foreground` | `0.3961 0.0113 78.19` | `#4A4640` | Text on secondary surfaces |
+| `--muted` | `0.9531 0.0074 80.72` | `#F2EFEA` | Disabled and de-emphasised surfaces |
+| `--muted-foreground` | `0.5127 0.0125 76.52` | `#6B665F` | De-emphasised text (5.4:1 on ivory) |
+| `--accent` | `0.9442 0.0109 167.79` | `#E6EFEB` | Hover and selection tint (pale evergreen) |
+| `--accent-foreground` | `0.3744 0.0463 174.11` | `#24493F` | Text on accent tint |
+| `--gold` | `0.6545 0.1045 82.36` | `#B08A3E` | Small decorative details only (ampersands, dots, progress) |
+| `--blush` / `--blush-foreground` | `0.9295 0.0206 48.49` / `0.4355 0.0894 39.02` | `#F4E4DC` / `#7A3E2A` | Etta suggestions and gentle callouts |
+| `--destructive` | `0.5294 0.1538 32.51` | `#B3402B` | Destructive actions |
+| `--success` | `0.5226 0.0933 160.2` | `#2F7A57` | Confirmations, completion |
+| `--border` / `--input` | `0.9145 0.0121 79.78` | `#E7E2DA` | Dividers, input borders |
+| `--ring` | `0.435 0.0541 174.32` | `#2E5B4F` | Focus rings |
+| `--sidebar` | `0.9531 0.0074 80.72` | `#F2EFEA` | App sidebar and Etta panel |
+| `--sidebar-accent` | `1 0 0` | `#FFFFFF` | Active sidebar item |
+
+#### Dark Mode
+
+Warm charcoal rather than pure black. The evergreen lifts so it stays legible, and text on it turns dark.
+
+| Token | OKLCH Value | Hex | Intended Use |
+|-------|-------------|-----|--------------|
+| `--background` | `0.1875 0.0026 67.67` | `#141312` | Page background |
+| `--foreground` | `0.9531 0.0074 80.72` | `#F2EFEA` | Body text |
+| `--card` / `--popover` | `0.245 0.0048 67.6` | `#22201E` | Cards, menus, dialogs |
+| `--primary` | `0.7435 0.0717 170.05` | `#7DBBA5` | Primary actions, active states |
+| `--primary-foreground` | `0.2056 0.0178 169.92` | `#0F1A16` | Text on primary (8.1:1) |
+| `--secondary` / `--muted` | `0.286 0.0061 78.23` | `#2C2A27` | Secondary and muted surfaces |
+| `--secondary-foreground` | `0.8195 0.0141 78.25` | `#C9C3BA` | Text on secondary surfaces |
+| `--muted-foreground` | `0.7149 0.0134 75.33` | `#A8A29A` | De-emphasised text |
+| `--accent` / `--accent-foreground` | `0.3175 0.0345 171.64` / `0.8465 0.0559 170.01` | `#1F3830` / `#A9D9C7` | Hover and selection tint |
+| `--gold` | `0.7348 0.1021 82.33` | `#C9A35A` | Decorative details |
+| `--blush` / `--blush-foreground` | `0.2968 0.0288 36.11` / `0.83 0.0709 42.83` | `#3A2823` / `#F0B9A3` | Etta suggestions |
+| `--destructive` | `0.6714 0.1444 32.51` | `#E0705A` | Destructive actions (dark text on it) |
+| `--success` | `0.7548 0.1038 161` | `#6FC49A` | Success states |
+| `--border` / `--input` | `0.3149 0.0082 75.27` | `#34312D` | Dividers and borders |
+| `--sidebar` | `0.2181 0.0041 84.59` | `#1B1A18` | App sidebar and Etta panel |
+
+#### Guest-facing surfaces
+
+Guest pages (`/w/*`: wedding website, RSVP, save-the-date, invitations) and anything rendered inside `TemplateThemeProvider` keep the **original** terracotta palette, Georgia/monospace stacks and button shapes until the templates are redesigned. This is done in `globals.css` with `:root:has([data-guest-surface])` (set in `src/app/w/[websiteSubUrl]/layout.tsx`) and `[data-wedding-template]`. Do not remove these scopes without a template redesign.
+
+### 3.3 Usage Rules
+
+1. **Primary colour = decisions and progress.** CTAs, active states, step indicators.
+2. **Accent colour = quiet feedback.** Hover and selection tints only. It is too pale for text; use `text-gold` for decorative highlights and `text-primary` for emphasis.
+3. **Muted = information hierarchy.** Secondary labels, helper text, metadata.
+4. **Destructive = last resort.** Always paired with a confirmation step. Never used for warnings; use `--gold` or a dedicated warning token.
+5. **Success = completion.** RSVP confirmed, vendor saved, website published. One clear moment per flow.
+6. **One accent per view.** Evergreen marks the single next action. Gold and blush are supporting notes, never competing CTAs.
+
+### 3.4 Foundation Tokens Beyond Colour
+
+These tokens are required to keep spacing, depth, and layering consistent across dashboard and guest-facing surfaces.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--radius-sm` | `0.375rem` (6px) | Chips, small badges |
+| `--radius-md` | `0.625rem` (10px) | Buttons, inputs, selects, sidebar items |
+| `--radius-lg` | `0.75rem` (12px) | Modals, popovers, feature panels |
+| `--radius-xl` | `1rem` (16px) | Cards, hero cards, large media surfaces |
+| `--shadow-sm` | `0 1px 2px oklch(0 0 0 / 0.06)` | Inputs, low-elevation surfaces |
+| `--shadow-md` | `0 6px 18px oklch(0 0 0 / 0.10)` | Cards, dropdowns |
+| `--shadow-lg` | `0 12px 30px oklch(0 0 0 / 0.14)` | Modals and dialogs |
+| `--z-dropdown` | `40` | Menus, combobox lists |
+| `--z-sticky` | `50` | Sticky headers, pinned actions |
+| `--z-modal` | `70` | Dialogs and drawers |
+| `--z-toast` | `80` | Toast notifications |
+| `--z-tooltip` | `90` | Tooltips only |
+
+---
+
+## 4. Typography
+
+### 4.1 Font Stack
+
+Two faces, nothing else:
+
+- **UI face**: the system font (SF Pro on Apple devices) for all body text, labels and controls.
+- **Display face**: Instrument Serif (`font-display`, loaded via `next/font`) for page titles, couple names, countdowns and large numbers. Never below 20px.
+
+```css
+font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+```
+
+Tailwind's `font-sans`, `font-serif` and `font-mono` all resolve through `--font-ui-*` variables. Internally all three are the UI face, so legacy `font-serif`/`font-mono` classes render in the system font. On guest surfaces they resolve to the original Georgia and monospace stacks. New code should use `font-sans` (or nothing) for UI text and `font-display` for display headings; do not reach for `font-serif` or `font-mono`.
+
+### 4.2 Scale
+
+| Role | Size | Weight | Use |
+|------|------|--------|-----|
+| Display | 2.25rem (36px) | 700 | Page titles (rare — wedding name, major section headers) |
+| Heading 1 | 1.875rem (30px) | 600 | Section titles |
+| Heading 2 | 1.5rem (24px) | 600 | Card headers, panel titles |
+| Heading 3 | 1.25rem (20px) | 600 | Sub-section labels |
+| Body | 1rem (16px) | 400 | Default prose, form labels |
+| Small | 0.875rem (14px) | 400 | Helper text, metadata, badges |
+| XSmall | 0.75rem (12px) | 400 | Timestamps, tertiary information only |
+
+### 4.3 Button Typography
+
+Buttons use **sentence case, semibold, 14px** system text with a 10px radius (`rounded-[10px] font-semibold text-sm`). Labels read as plain verbs: "Add guest", "Mark done". Section eyebrows may use small uppercase with `tracking-[0.1em]`, but actions never do.
+
+Guest surfaces keep the original uppercase monospace buttons via the `ui-button` hook class.
+
+### 4.4 Line Heights
+
+- Body text: `1.5` (relaxed)
+- Headings: `1.25` (tight)
+- UI labels: `1` (none — vertically centered via flex)
+
+---
+
+## 5. Spacing & Layout
+
+### 5.1 Base Unit
+
+Spacing uses Tailwind's default 4px base unit. All spacing values should be multiples of 4px.
+
+### 5.2 Layout Widths
+
+| Context | Max Width | Notes |
+|---------|-----------|-------|
+| Dashboard content | `max-w-4xl` (896px) | Core planning surfaces |
+| Settings panels | `max-w-2xl` (672px) | Focused, distraction-free |
+| Guest website | `max-w-3xl` (768px) | Readable for guests on mobile |
+| Modals/dialogs | `max-w-lg` (512px) | Default; `max-w-2xl` for complex forms |
+| Full-bleed | 100% | Hero images, navigation bars |
+
+### 5.3 Mobile-First Design (Non-Negotiable)
+
+Mobile is a **first-class citizen**, not a responsive afterthought. This means:
+
+- **Design mobile first.** Start every new screen at 375px width. Expand to desktop. Never design desktop-first and shrink down.
+- **All interactive targets**: minimum 44×44px tap target on mobile (Apple HIG / WCAG 2.5.5)
+- **No horizontal scrolling** on any mobile breakpoint — content must reflow, not overflow
+- **Bottom navigation on mobile**: primary nav actions must be reachable with one thumb
+- **Touch gestures**: swipe-to-dismiss for modals and sheets on mobile; no hover-only interactions
+- **Test on real devices**: every new feature must be manually verified on at minimum an iPhone SE (small) and a standard Android (medium) before shipping
+- **Guest website is held to an even higher mobile bar**: guests receive a link in a text message or email and open it on their phone — treat mobile as the primary surface for all guest-facing design
+
+| Breakpoint | Width | Behaviour |
+|-----------|-------|-----------|
+| Base | < 640px | Single column, bottom nav, stacked content |
+| `sm:` | ≥ 640px | Slightly wider content, same single-column flow |
+| `md:` | ≥ 768px | Two-column layouts, top nav possible |
+| `lg:` | ≥ 1024px | Full dashboard layout with sidebar |
+
+### 5.4 Grid Patterns
+
+- **Guest list, vendor list**: Table on desktop (`lg:`), card stack on mobile
+- **Dashboard overview**: 2-up or 3-up stat cards on desktop, single column on mobile
+- **Settings**: Single column, full width within max-width constraint
+
+---
+
+## 6. Component Conventions
+
+### 6.1 Buttons
+
+Six button variants. Choose the minimum necessary emphasis for the context.
+
+| Variant | Use | Notes |
+|---------|-----|-------|
+| `default` | Primary CTA — one per view | Primary colour fill |
+| `secondary` | Secondary actions | Outlined, `--secondary` background |
+| `destructive` | Delete / remove | Always confirm before executing |
+| `ghost` | Toolbar, navigation actions | No background until hover |
+| `outline` | Less-prominent actions | Border only |
+| `link` | Inline contextual actions | Underline on hover |
+
+**Rules:**
+- One `default` button per screen section. Never two equal-weight CTAs competing.
+- Destructive buttons must be visually separated from adjacent non-destructive buttons (whitespace or a divider).
+- Loading states: replace label with a spinner and disable the button. Never remove the button.
+
+### 6.2 Forms
+
+- **Label placement**: Always above the field, never inside (placeholder is not a label).
+- **Placeholder text**: Use for format hints only (`e.g. jane@example.com`). Never for labels.
+- **Helper text**: Below the field, `text-muted-foreground`, small size.
+- **Error text**: Below the field, `text-destructive`, small size. Inline errors preferred over toast-only errors for form validation.
+- **Required fields**: No asterisks in consumer-facing forms. Mark optional fields with `(optional)` instead.
+- **Smart defaults**: Per PRINCIPLES.md, AI should pre-populate when context exists. Empty forms are a last resort.
+
+### 6.3 Cards
+
+Cards represent discrete objects (a guest, a vendor, an event). They should:
+- Have a single primary action that is obvious on hover/focus
+- Never show more than 5 data points in list context — truncate with a "view" action
+- Use `CardHeader` / `CardContent` / `CardFooter` structure for complex cards
+- On mobile: full width. On desktop: respect the grid.
+
+### 6.4 Modals & Dialogs
+
+- **Use modals for**: Confirmations, quick-entry forms (add a guest, tag a vendor), media previews
+- **Do not use modals for**: Complex multi-step flows (use a dedicated page), navigation
+- Backdrop closes the modal only for non-destructive actions. Destructive confirmations require an explicit cancel button.
+- Default max-width: `max-w-lg`. Complex forms: `max-w-2xl`.
+
+### 6.5 Empty States
+
+Every list, table, collection view, and data surface must have a designed empty state. **"No data" is not a state — it is a missing design.**
+
+Empty states must:
+1. Explain what belongs here in one sentence
+2. Provide the primary action to fill it (a button, not a link)
+3. Use warm, encouraging language (see Brand Voice section)
+4. Never show a raw "0 items" count as the only feedback
+
+| Surface | Empty State Copy | CTA |
+|---------|-----------------|-----|
+| Guest list | "Your guest list is ready for you. Add your first guest to get started." | Add Guest |
+| Vendor list | "Track all your vendors in one place. Add your first one." | Add Vendor |
+| Events | "Every great wedding has a plan. Add your first event." | Add Event |
+| RSVP responses | "No RSVPs yet — your invitation link is ready to share." | Copy Link |
+| Etta chat | "Ask Etta anything about your wedding. She's here to help." | *(no CTA — just the chat input)* |
+
+Never: "No guests found." — this reads as a search failure, not an invitation to act.
+
+### 6.6 Loading States
+
+Loading states must be designed as carefully as content states. They are the first thing many users see.
+
+**Rules:**
+- Use `skeleton` component for all content that will appear — never a blank space or white flash
+- Skeletons must match the **exact dimensions** of the loaded content — no layout shift on load
+- Skeleton animation: subtle shimmer (`animate-pulse`), not a spinning indicator
+- Inline spinners only for button actions and in-place mutations
+- Full-page loading spinner only for initial auth/data hydration — not for navigation between pages
+- Loading states must not block navigation — users should be able to move to another section while data loads
+
+**Per-context loading behaviour:**
+
+| Context | Loading Pattern |
+|---------|----------------|
+| Guest list | Skeleton rows matching the row height |
+| Dashboard stats | Skeleton stat cards (same grid layout) |
+| Vendor details | Skeleton panel — header + two body rows |
+| RSVP form (guest site) | Skeleton fields before form hydrates |
+| Cover photo upload | Progress bar inline in the upload zone |
+| AI suggestion generating | Animated ellipsis + "Etta is thinking…" label |
+
+### 6.7 Partial States
+
+Partial states are under-designed in most products and must be explicitly handled in OSWP.
+
+A **partial state** is when data exists but is incomplete — a guest with no RSVP, a vendor with no quote attached, an event with no attire set, a website with no cover photo.
+
+**Rules:**
+- Partial data must be visually distinct from complete data — use `--muted-foreground` or a placeholder marker, not absence
+- Never show a broken UI because a field is missing — show a graceful placeholder
+- Where AI can fill the gap (e.g. suggest a vendor quote, draft website copy), surface an Etta suggestion affordance in the partial state
+- Partial states must not block the user from completing other tasks — forward progress is always possible
+
+**Examples:**
+
+| Surface | Partial State | Treatment |
+|---------|--------------|-----------|
+| Guest card | No RSVP yet | "Awaiting RSVP" badge in `--muted` colour |
+| Vendor card | No quote attached | "Add quote" affordance in the card footer |
+| Website preview | No cover photo | Template-defined gradient placeholder with "Add cover photo" overlay |
+| Event | No attire specified | "Attire not set" in muted text + edit link |
+| Guest site password gate | Site being built | Friendly holding page, not a 404 |
+
+### 6.8 Core Primitive Components
+
+These primitives are required baseline components in the design system and should be implemented once, then reused.
+
+| Component | Required States | Notes |
+|----------|------------------|-------|
+| Text Input / Textarea | default, focus, filled, error, disabled, readonly | Label and helper/error text required |
+| Select / Combobox | default, open, selected, searching, empty, disabled, error | Keyboard navigable and screen-reader labelled |
+| Checkbox / Radio / Switch | unchecked, checked, indeterminate (checkbox), disabled, error | 44x44 tap target with visible focus |
+| Table | default, sortable, empty, loading, error | Sticky headers optional, mobile fallback to cards required |
+| Tabs | default, active, hover/focus, disabled | Must support keyboard arrow navigation |
+| Dropdown Menu | closed, open, focus, danger action, disabled item | Esc closes; click-away closes |
+| Toast | info, success, warning, error | Auto-dismiss plus manual dismiss |
+| Tooltip | hidden, visible | Never the only way to access required information |
+| Pagination | default, active page, disabled edge | Always paired with total count and page size |
+| Avatar / Badge | with image/icon, fallback initials/text | Fallback is mandatory, never broken image |
+
+### 6.9 Error, Permission, and Offline States
+
+Every data surface must define these states in addition to empty/loading/partial.
+
+| State Type | Required UX Treatment | CTA |
+|-----------|------------------------|-----|
+| Error (`5xx` / unknown failure) | Human-readable failure copy, preserve already-loaded data | Retry |
+| Validation error (`4xx`) | Inline field error with clear fix path | Resolve field + submit |
+| Permission denied | Explain why access is blocked and who can grant it | Request access / switch account |
+| Offline / network lost | Persistent banner and optimistic queue where possible | Reconnect / retry |
+| Rate limited | Clear cooldown messaging with remaining wait time if available | Try again later |
+| Not found (`404`) | Friendly redirect path, never dead end | Go to Dashboard |
+
+---
+
+## 7. AI Interaction Patterns
+
+All AI features must satisfy at least one of the five PRINCIPLES.md principles. This section maps those principles to concrete UX patterns.
+
+### 7.1 Principle Mapping
+
+| Principle | UX Pattern |
+|-----------|------------|
+| AI Generates, Couples Curate | Draft → Review → Accept/Edit flow |
+| Smart Defaults Over Empty Forms | Pre-populated fields with edit affordance |
+| Proactive Nudges, Not Passive Dashboards | Contextual alert cards with one-tap action |
+| Personalization That Compounds | Saved preferences, learned style tokens |
+| AI Handles the Tedious, Couples Keep the Joy | Background automation with visible audit log |
+
+### 7.2 Etta (AI Assistant)
+
+Etta is OSWP's primary AI persona. She appears as a chat interface and as inline suggestion cards.
+
+**Etta's visual identity:**
+- Distinct from system UI: uses a slightly different card background to signal "this is AI"
+- Always shows attribution: suggestions are labelled "Suggested by Etta"
+- Never presents AI output as system truth — always as a starting point
+
+**Interaction states:**
+1. **Generating**: Animated ellipsis, card in placeholder state
+2. **Suggestion ready (T1 — auto-approve)**: Content appears with "Etta suggested this" label and an edit affordance
+3. **Suggestion ready (T2 — requires review)**: Content blocked behind "Review Etta's suggestion" CTA. Clear explanation of why this requires human review.
+4. **Accepted**: Standard UI with "✓ Etta" attribution mark (subtle, small text)
+5. **Edited**: "Edited from Etta's suggestion" attribution (couple owns the content now)
+6. **Rejected**: Dismissed cleanly with no friction
+
+**Anti-patterns (per PRINCIPLES.md):**
+- Do not present AI output without attribution
+- Do not auto-apply T2 suggestions (those require explicit couple approval)
+- Do not use generic templates — every Etta output should use couple context
+- Do not make Etta opaque — if she's uncertain, she says so
+
+### 7.3 Nudge Cards
+
+Proactive nudges appear as cards in the dashboard and as notifications. They must:
+1. State the specific situation ("12 guests haven't RSVPd")
+2. State the deadline or urgency ("Your deadline is in 5 days")
+3. Offer a one-tap resolution ("Send reminder")
+4. Be dismissible — couples can snooze or clear nudges
+
+Nudge cards use a distinct visual treatment: left border accent in `--primary` colour.
+
+---
+
+## 8. Guest Website Design
+
+The guest-facing wedding website (`[websiteSubUrl]`) is a different design context from the planning dashboard. It must feel like a **personal invitation**, not an app.
+
+### 8.1 Guest Site Principles
+
+- **Warmth over function**: Guests don't need toolbars, they need to feel welcomed
+- **Mobile-first by default**: Most guests will view on a phone, often in social contexts
+- **Password-optional**: When enabled, the gate must feel elegant, not like a security wall
+- **RSVP is the primary action**: Every guest-site page should have a clear path to RSVP
+- **Theme-coherent throughout**: Every guest-facing surface — website, RSVP forms, confirmation emails, password gate — must reflect the couple's chosen template. No unthemed fallbacks.
+
+### 8.2 Wedding Website Templates
+
+Couples choose a template for their wedding website. The template defines the complete visual identity for all guest-facing surfaces.
+
+**What a template controls:**
+
+| Layer | Examples |
+|-------|---------|
+| Typography | Font family, weight, size scale for headings and body |
+| Colour palette | Background, foreground, accent, button, border colours |
+| Layout style | Full-bleed vs centred, card-based vs editorial |
+| Imagery treatment | Full-bleed hero, inset photos, circular framing |
+| Decorative elements | Borders, dividers, flourishes (optional, can be none) |
+| RSVP form skin | Field styles, button colour, confirmation page treatment |
+
+**Template implementation rules:**
+
+1. Templates are CSS variable overrides applied at the `[websiteSubUrl]` route boundary. The dashboard is never affected.
+2. Every template must pass WCAG AA contrast at every colour combination it ships. No exceptions.
+3. Templates must render correctly on all three core states: loading (skeleton), empty (no cover photo, placeholder name), and fully populated.
+4. New templates are added by defining a named theme object — no one-off CSS. New themes go through design review before shipping.
+5. The default template must work well without a cover photo — not every couple uploads one immediately.
+
+**Minimum template set (v1):**
+
+| Template Name | Character | Notes |
+|--------------|-----------|-------|
+| Classic | Clean serif, cream/white, timeless | Default for new weddings |
+| Modern | Sans-serif, bold contrast, minimal | Appeals to contemporary couples |
+| Garden | Soft greens, botanical feel, light | Nature/outdoor weddings |
+| Minimal | Pure white, generous spacing, understated | Photography-forward couples |
+
+Additional templates can be added in future milestones; the template selector UI must accommodate a growing library without requiring redesign.
+
+**Template picker UX (in dashboard):**
+- Displayed as visual thumbnails, not a dropdown
+- Live preview before committing (do not require a save to preview)
+- Confirmation step before applying a new template to a live site
+
+### 8.3 Guest Site Layout
+
+- Max width: `max-w-3xl`, centred
+- Typography: template-defined; minimum body text 18px for readability
+- Spacing: more generous than dashboard — `py-12` section padding minimum
+- Cover photo: Full-bleed hero at top, couple name and date overlaid
+- When no cover photo is set: graceful fallback using a template-defined gradient or pattern — never a broken image state
+
+### 8.4 RSVP Form
+
+- Single page, no multi-step wizard for simple RSVPs
+- Multi-step only when: multiple events, meal choices, or extended question sets
+- RSVP form inherits the couple's template — same font, colours, and styling
+- Success state: Celebratory — confirmation copy should feel like a response to an invitation, not a form submission confirmation
+- Success page also inherits the template
+
+---
+
+## 9. Navigation
+
+### 9.1 Dashboard Navigation
+
+- **Desktop**: Persistent light left sidebar (`--sidebar`) with a Lucide icon + sentence-case label
+- **Mobile**: Bottom navigation bar (max 5 items) + hamburger for overflow
+- Active state: white pill (`--sidebar-accent`) with a subtle shadow, semibold label and evergreen icon; `aria-current="page"`
+- Navigation items in bottom bar: Dashboard, Guests, Events, Vendors, Website
+- Overflow (`More`) menu item on mobile: Settings (and future secondary routes)
+
+### 9.2 Settings Navigation
+
+- Tabbed navigation within a settings page
+- Do not use a separate settings sidebar — keep it lightweight
+- Order: Wedding Details, RSVP Settings, Website, Account, Team (future)
+
+---
+
+## 10. Motion & Animation
+
+- **Duration**: 150ms for micro-interactions (hover, focus), 250ms for transitions (modal open, panel slide)
+- **Easing**: `ease-out` for elements entering, `ease-in` for elements exiting
+- **Respect `prefers-reduced-motion`**: All animations must be disabled or reduced when this system preference is set
+- **No decorative animation**: Animation should communicate state change, not add flair. No loading spinners for things that load in < 200ms.
+
+---
+
+## 11. Accessibility
+
+- **Minimum contrast**: WCAG AA (4.5:1 for body text, 3:1 for large text and UI components)
+- **Focus rings**: Visible on all interactive elements. Use `--ring` token. Never `outline: none` without a custom replacement.
+- **Screen reader labels**: All icon-only buttons must have `aria-label`. All form inputs must have `<label>` (not placeholder as label).
+- **Keyboard navigation**: All interactive flows must be completable without a mouse. Test tab order on every new form.
+- **Error announcements**: Form errors must be announced via `aria-live` or linked via `aria-describedby`.
+
+---
+
+## 12. Print & Email
+
+### 12.1 Print Styles
+
+Guest list and vendor comparison views support print. Print styles:
+- Hide navigation, sidebar, action buttons
+- Expand truncated content
+- Black text on white background only
+- System font (no web fonts)
+
+### 12.2 Email Templates
+
+Email templates (via Resend) follow the same brand tokens where possible. Rules:
+- Maximum width: 600px
+- Use table-based layout for email client compatibility
+- Brand colour (`--primary`) used for CTA buttons and accent rules
+- Plain text fallback required for every HTML email
+
+---
+
+## 13. Design Governance
+
+This document is only authoritative if there is an explicit enforcement loop.
+
+### 13.1 Definition of Done (Design)
+
+A feature is not design-complete until all items below are true:
+1. Uses semantic tokens only (no hardcoded colour values in product UI)
+2. Implements empty/loading/error/partial states for all major data surfaces
+3. Verifies keyboard flow and visible focus for every interactive control
+4. Includes mobile validation at 375px and at least one desktop breakpoint
+5. Includes at least one screenshot or recording in PR showing the intended final state
+
+### 13.2 Review Workflow
+
+1. Designer or feature owner maps new UI to the relevant sections in `DESIGN.md`
+2. Reviewer checks token usage, state coverage, and component convention adherence
+3. Exceptions require a short `Design Exception` note in PR description with expiry date
+4. Expired exceptions must be removed or explicitly renewed
+
+### 13.3 Versioning and Change Log
+
+- Any change that affects token values, component behaviour, or accessibility requirements must update the `Last updated` date
+- Significant design system changes must include a short `What changed` note in the PR
+- Deprecated patterns must be marked as `Deprecated` with a replacement and removal target milestone
+
+---
+
+## 14. Open Questions & Future Decisions
+
+These are design decisions intentionally deferred pending user research or roadmap prioritisation:
+
+1. **Display typeface**: Decided in the Evergreen & Ivory refresh: Instrument Serif for display, system font for UI. Templates still define their own heading fonts.
+2. **Template library growth**: How many templates ship in v1 and what is the review/approval process for community-contributed templates? Needs product decision before the template library exceeds ~8 options.
+3. **Custom theme editor**: Should power users be able to customise colours/fonts beyond the preset templates (e.g. brand hex codes for couples with strong visual identities)? Scoped out of v1 — revisit at v1.1.
+4. **Mobile app patterns**: If a native mobile app is built, do these design tokens translate directly or do we need a separate native design pass? Deferred until web is stable.
+5. **Accessibility audit cadence**: At what milestone should we conduct a formal WCAG audit with assistive technology testing? Recommend at first public beta.
+
+---
+
+*Last updated: 2026-10-18 | Maintained by Head of Product*

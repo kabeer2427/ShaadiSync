@@ -1,0 +1,275 @@
+import type { inferRouterOutputs } from '@trpc/server'
+import type { FileWithPath } from 'react-dropzone'
+
+import type { AppRouter } from '~/server/api/root'
+import type { Event as ServerEvent } from '~/server/domains/event/event.types'
+
+/**
+ * Client Event type — derived from the canonical server Event entity.
+ *
+ * Differences from the server type:
+ * - Adds `questions` (always present in client views)
+ * - Omits `createdAt`/`updatedAt` (not needed in client)
+ * - Relaxes `collectRsvp`/`allowTagAlongs` to optional (form contexts may not set them)
+ */
+type Event = Omit<ServerEvent, 'createdAt' | 'updatedAt' | 'collectRsvp' | 'allowTagAlongs'> & {
+  questions: Question[]
+  collectRsvp?: boolean
+  allowTagAlongs?: boolean
+}
+
+interface EventWithResponses extends Event {
+  guestResponses: {
+    attending: number
+    invited: number
+    declined: number
+    notInvited: number
+  }
+}
+
+type Invitation = {
+  id: string
+  guestId: number
+  eventId: string
+  weddingId: string
+  rsvp: string
+  dietaryRestrictions: string | null
+  submittedBy: number | null
+  submittedAt: Date | null
+  invitedAt: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+type Household = {
+  id: string
+  address1: string | null
+  address2: string | null
+  city: string | null
+  state: string | null
+  zipCode: string | null
+  country: string | null
+  notes: string | null
+  gifts: Gift[]
+  guests: Guest[]
+}
+
+type Gift = {
+  eventId: string
+  householdId?: string
+  thankyou: boolean
+  description?: string | null | undefined
+  event?: {
+    name: string
+  }
+}
+
+type Guest = {
+  id: number
+  firstName: string
+  lastName: string
+  email: string | null
+  phone: string | null
+  isPrimaryContact: boolean
+  weddingId: string
+  householdId: string
+  ageGroup: 'INFANT' | 'CHILD' | 'TEEN' | 'ADULT' | null
+  isTagAlong: boolean
+  createdAt: Date
+  updatedAt: Date
+  invitations?: Invitation[]
+  guestTags?: Array<{ tagId: string }>
+}
+
+type User = {
+  id: string
+  name: string | null
+  email: string
+  emailVerified: boolean
+  image: string | null
+  createdAt: Date
+  updatedAt: Date
+  websiteUrl: string | null
+  groomFirstName: string | null
+  groomLastName: string | null
+  brideFirstName: string | null
+  brideLastName: string | null
+}
+
+type WeddingDate = {
+  standardFormat: string
+  numberFormat: string
+}
+
+type WeddingData = {
+  groomFirstName: string
+  groomLastName: string
+  brideFirstName: string
+  brideLastName: string
+  daysRemaining: number
+  date: WeddingDate
+}
+
+type EventFormData = {
+  eventName: string
+  date: string | undefined
+  startTime: string | undefined
+  endTime: string | undefined
+  venue: string | undefined
+  attire: string | undefined
+  description: string | undefined
+  eventId: string
+  allowTagAlongs?: boolean
+}
+
+type EventId = string
+type RSVP = string
+type FormInvites = Record<EventId, RSVP>
+
+type GuestFormData = {
+  guestId?: number
+  firstName: string
+  lastName: string
+  email?: string | null
+  phone?: string | null
+  isPrimaryContact?: boolean
+  ageGroup?: 'INFANT' | 'CHILD' | 'TEEN' | 'ADULT' | null
+  tagIds?: string[]
+  invites: FormInvites
+}
+
+type HouseholdFormData = {
+  householdId: string
+  address1?: string
+  address2?: string
+  city?: string
+  state?: string
+  country?: string
+  zipCode?: string
+  notes?: string
+  gifts: Gift[]
+  guestParty: GuestFormData[]
+}
+
+type Website = {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  weddingId: string
+  subUrl: string
+  isPasswordEnabled: boolean
+  isRsvpEnabled: boolean
+  password: string | null
+  coverPhotoUrl?: string | null
+  generalQuestions?: Question[]
+}
+
+type PublicWebsite = Omit<Website, 'password'>
+
+type WeddingPageData = {
+  groomFirstName: string | null
+  groomLastName: string | null
+  brideFirstName: string | null
+  brideLastName: string | null
+  date: {
+    standardFormat: string | undefined
+    numberFormat: string | undefined
+  }
+  website: PublicWebsite
+  daysRemaining: number
+  events: Event[]
+}
+
+type StepFormProps = {
+  goNext?: () => void
+  goBack?: () => void
+}
+
+type RsvpFormResponse = {
+  eventId: string
+  guestId: number
+  rsvp: string
+  guestName: string
+}
+
+type Option = {
+  id: string
+  responseCount: number
+  text: string
+  description: string
+  questionId: string
+}
+
+type Question = {
+  id: string | undefined
+  eventId?: string | null
+  websiteId?: string | null
+  text: string
+  type: string
+  isRequired: boolean
+  allowOther?: boolean
+  options?: Option[]
+  answers?: Answer[]
+  recentAnswer?: Answer | null
+  _count?: {
+    answers: number
+  }
+}
+
+type Answer = {
+  questionId: string
+  guestId: number | undefined
+  householdId: string | undefined
+  guestFirstName?: string | null
+  guestLastName?: string | null
+  response: string
+  // response: {
+  //   type: string;
+  //   answer?: string;
+  //   selectedOptionId?: string;
+  // };
+}
+
+type formOption = {
+  id?: string
+  text: string
+  description: string
+}
+type TQuestionOption = Option | formOption
+
+interface CoverPhoto extends FileWithPath {
+  preview?: string
+}
+
+type RouterOutput = inferRouterOutputs<AppRouter>
+type DashboardData = RouterOutput['dashboard']['getForActiveWorkspace']
+type HouseholdSearch = RouterOutput['household']['findBySearch']
+type RsvpPageData = RouterOutput['website']['fetchWeddingData']
+
+export type {
+  Answer,
+  CoverPhoto,
+  DashboardData,
+  Event,
+  EventFormData,
+  EventWithResponses,
+  FormInvites,
+  Gift,
+  Guest,
+  GuestFormData,
+  Household,
+  HouseholdFormData,
+  HouseholdSearch,
+  Invitation,
+  Option,
+  PublicWebsite,
+  Question,
+  RsvpFormResponse,
+  RsvpPageData,
+  StepFormProps,
+  TQuestionOption,
+  User,
+  Website,
+  WeddingData,
+  WeddingPageData,
+}

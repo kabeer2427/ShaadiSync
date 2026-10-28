@@ -1,0 +1,85 @@
+// Domain routers (Phase 1-3 - migrated to domain architecture)
+// NOTE: routers are imported directly from their router files (not domain barrels)
+// to avoid circular module dependencies that cause TDZ errors in the compiled bundle.
+import { createTRPCRouter } from '~/server/api/trpc'
+import { dashboardRouter } from '~/server/application/dashboard/dashboard.router'
+import { householdInviteRouter } from '~/server/application/household-invite'
+import { rsvpSubmissionRouter } from '~/server/application/rsvp-submission/rsvp-submission.router'
+import { selfFillRegistrationService } from '~/server/application/self-fill-registration'
+import { budgetRouter } from '~/server/domains/budget/budget.router'
+import { communicationLogRouter } from '~/server/domains/communication-log/communication-log.router'
+import { eventRouter } from '~/server/domains/event/event.router'
+import { giftRouter } from '~/server/domains/gift/gift.router'
+import { guestRouter } from '~/server/domains/guest/guest.router'
+import { guestTagRouter } from '~/server/domains/guest-tag/guest-tag.router'
+import { householdRouter } from '~/server/domains/household/household.router'
+import { invitationRouter } from '~/server/domains/invitation/invitation.router'
+import { messagingRouter } from '~/server/domains/messaging/messaging.router'
+import { milestoneRouter } from '~/server/domains/milestone/milestone.router'
+import { questionRouter } from '~/server/domains/question/question.router'
+import { seatingRouter } from '~/server/domains/seating/seating.router'
+import { createSelfFillRouter } from '~/server/domains/self-fill'
+import { taskRouter } from '~/server/domains/task/task.router'
+import { userRouter } from '~/server/domains/user/user.router'
+import { vendorRouter } from '~/server/domains/vendor/vendor.router'
+import { websiteRouter } from '~/server/domains/website/website.router'
+import { websiteSectionRouter } from '~/server/domains/website-section/website-section.router'
+import { weddingRouter } from '~/server/domains/wedding/wedding.router'
+
+/**
+ * This is the primary router for your server.
+ *
+ * Domain Architecture Migration Status:
+ * - Phase 1 (Complete): user, website, event
+ * - Phase 2 (Complete): gift, guest, invitation
+ * - Phase 3 (Complete): question, household
+ * - Phase 4 (Complete): Application Services (dashboard, rsvp-submission, household-management)
+ */
+export const appRouter = createTRPCRouter({
+  // Core domain (new architecture)
+  wedding: weddingRouter,
+
+  // Phase 1 domains (migrated)
+  user: userRouter,
+  website: websiteRouter,
+  websiteSection: websiteSectionRouter,
+  event: eventRouter,
+
+  // Phase 2 domains (migrated)
+  gift: giftRouter,
+  guest: guestRouter,
+  guestTag: guestTagRouter,
+  invitation: invitationRouter,
+
+  // Phase 3 domains (migrated)
+  question: questionRouter,
+  household: householdRouter,
+
+  // Seating chart builder
+  seating: seatingRouter,
+
+  // Self-fill guest registration (router created with injected application service)
+  selfFill: createSelfFillRouter(selfFillRegistrationService),
+
+  // Phase 4 application services (migrated)
+  dashboard: dashboardRouter,
+  rsvpSubmission: rsvpSubmissionRouter,
+  householdInvite: householdInviteRouter,
+
+  // Phase 5 add-on domains
+  vendor: vendorRouter,
+  milestone: milestoneRouter,
+  task: taskRouter,
+
+  // Budgeting
+  budget: budgetRouter,
+
+  // Communication log (household outreach timeline)
+  communicationLog: communicationLogRouter,
+
+  // Messaging (Telegram couple-bot)
+  messaging: messagingRouter,
+})
+
+// export type definition of API
+export type AppRouter = typeof appRouter

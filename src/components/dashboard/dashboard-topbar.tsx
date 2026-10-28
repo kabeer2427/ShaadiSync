@@ -1,0 +1,79 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+
+import { dispatchDashboardAddTaskEvent } from '~/components/dashboard/task-dialog-events'
+import { useAuthenticatedSidebar } from '~/components/layout/authenticated-app-shell'
+import { ThemeToggle } from '~/components/theme-toggle'
+
+type DashboardTopbarProps = {
+  title?: string
+  showManagementActions?: boolean
+  onMenuToggle?: () => void
+  onAddTask?: () => void
+}
+
+export default function DashboardTopbar(props: Readonly<DashboardTopbarProps>) {
+  const { title = 'Dashboard', showManagementActions = true, onMenuToggle, onAddTask } = props
+  const { openSidebar } = useAuthenticatedSidebar()
+  const [today, setToday] = useState('')
+
+  useEffect(() => {
+    const formattedToday = new Intl.DateTimeFormat(undefined, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date())
+
+    setToday(formattedToday)
+  }, [])
+
+  return (
+    <header className='flex h-14 flex-shrink-0 items-center justify-between border-border/80 border-b bg-card/70 px-4 backdrop-blur-sm lg:px-6'>
+      <div className='flex items-center gap-3'>
+        {/* Mobile menu trigger — 44×44 touch target */}
+        <button
+          type='button'
+          aria-label='Open sidebar'
+          onClick={onMenuToggle ?? openSidebar}
+          className='flex h-11 w-11 items-center justify-center rounded-md text-foreground/60 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50 focus-visible:ring-offset-2 lg:hidden'
+        >
+          <svg
+            aria-hidden='true'
+            className='h-5 w-5'
+            fill='none'
+            stroke='currentColor'
+            viewBox='0 0 24 24'
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              d='M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5'
+            />
+          </svg>
+        </button>
+
+        <div className='flex items-baseline gap-3'>
+          <h1 className='font-semibold text-foreground text-lg'>{title}</h1>
+          <span className='hidden text-muted-foreground text-sm sm:block'>{today}</span>
+        </div>
+      </div>
+
+      <div className='flex items-center gap-2'>
+        <ThemeToggle />
+        {showManagementActions && (
+          <button
+            type='button'
+            aria-label='Add task'
+            onClick={onAddTask ?? dispatchDashboardAddTaskEvent}
+            className='flex min-h-[40px] items-center gap-1.5 rounded-[10px] bg-primary px-4 font-semibold text-primary-foreground text-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+          >
+            + Add task
+          </button>
+        )}
+      </div>
+    </header>
+  )
+}
