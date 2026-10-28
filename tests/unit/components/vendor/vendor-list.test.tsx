@@ -92,7 +92,7 @@ describe('VendorList', () => {
   it('summarises booked, deciding and unfilled categories', () => {
     render(<VendorList initialVendors={vendors} />)
 
-    expect(screen.getByText('1 booked · 2 deciding · 5 categories to fill')).toBeInTheDocument()
+    expect(screen.getByText('1 booked · 2 deciding · 11 categories to fill')).toBeInTheDocument()
   })
 
   it('shows every populated category as a section on the All tab', () => {

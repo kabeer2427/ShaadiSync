@@ -81,6 +81,33 @@ export function CategoryForm(props: Readonly<CategoryFormProps>) {
           maxLength={100}
           required
         />
+        {!isEditing && (
+          <div className='pt-1'>
+            <p className='text-[0.7rem] text-muted-foreground'>Indian wedding suggestions:</p>
+            <div className='mt-1 flex flex-wrap gap-1'>
+              {[
+                'Venue & Accommodations',
+                'Catering & Mithai',
+                'Decor & Mandap Floral',
+                'Photography & Film',
+                'Attire & Jewelry',
+                'Mehendi & Bridal Makeup',
+                'DJ, Sangeet & Sound',
+                'Pandit & Puja Rituals',
+                'Favors & Gift Boxes',
+              ].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type='button'
+                  onClick={() => setName(suggestion)}
+                  className='rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-[0.65rem] text-muted-foreground hover:bg-muted hover:text-foreground'
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div className='space-y-1.5'>
         <Label htmlFor='category-planned'>Planned budget ({currency})</Label>

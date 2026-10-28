@@ -7,6 +7,8 @@ import {
   MapPin,
   MoreHorizontal,
   Pencil,
+  Sparkles,
+  StickyNote,
   Trash2,
   Users,
 } from 'lucide-react'
@@ -103,10 +105,28 @@ function EventCardBase({
             </div>
           )}
 
+          {event.attire && (
+            <div className='flex items-center gap-1.5 text-muted-foreground text-xs'>
+              <Sparkles className='h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400' />
+              <span className='font-medium text-foreground/80'>Attire:</span>
+              <span className='truncate'>{event.attire}</span>
+            </div>
+          )}
+
           {event.description && (
             <p className='line-clamp-2 text-muted-foreground text-xs md:text-sm'>
               {event.description}
             </p>
+          )}
+
+          {event.notes && (
+            <div className='rounded border border-border/80 border-dashed bg-muted/30 px-2.5 py-1.5 text-xs'>
+              <div className='flex items-center gap-1 font-mono text-[0.65rem] text-muted-foreground uppercase tracking-wider'>
+                <StickyNote className='h-3 w-3 text-muted-foreground' />
+                <span>Organizer Notes</span>
+              </div>
+              <p className='mt-0.5 line-clamp-2 text-muted-foreground/90'>{event.notes}</p>
+            </div>
           )}
 
           {totalGuests > 0 && (

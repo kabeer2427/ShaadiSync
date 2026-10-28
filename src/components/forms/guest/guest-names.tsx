@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '~/components/ui/select'
 import { Switch } from '~/components/ui/switch'
+import { ACCESSIBILITY_OPTIONS, INDIAN_DIETARY_OPTIONS } from '~/lib/constants'
 
 const GUEST_AGE_GROUP = {
   INFANT: 'INFANT',
@@ -265,6 +266,68 @@ export const GuestNameForm = ({
           {guestErrors?.ageGroup && (
             <p className='text-destructive text-sm'>{guestErrors.ageGroup.message}</p>
           )}
+        </div>
+
+        <div className='grid gap-4 sm:grid-cols-2'>
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <Label htmlFor={`guest${guestIndex}-dietary`}>Dietary Preferences</Label>
+              <span className='font-mono text-[0.62rem] text-muted-foreground uppercase'>
+                Optional
+              </span>
+            </div>
+            <Input
+              id={`guest${guestIndex}-dietary`}
+              {...register(`guestParty.${guestIndex}.dietaryPreferences`)}
+              placeholder='e.g., Pure Veg, Jain, Halal, Nut-Free'
+            />
+            <div className='flex flex-wrap gap-1 pt-1'>
+              {INDIAN_DIETARY_OPTIONS.slice(0, 4).map((opt) => (
+                <button
+                  key={opt.value}
+                  type='button'
+                  onClick={() =>
+                    setValue(`guestParty.${guestIndex}.dietaryPreferences`, opt.value, {
+                      shouldDirty: true,
+                    })
+                  }
+                  className='rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-[0.65rem] text-muted-foreground hover:bg-muted hover:text-foreground'
+                >
+                  {opt.value}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <Label htmlFor={`guest${guestIndex}-accessibility`}>Accessibility Needs</Label>
+              <span className='font-mono text-[0.62rem] text-muted-foreground uppercase'>
+                Optional
+              </span>
+            </div>
+            <Input
+              id={`guest${guestIndex}-accessibility`}
+              {...register(`guestParty.${guestIndex}.accessibilityRequirements`)}
+              placeholder='e.g., Wheelchair, Ground floor, Elderly support'
+            />
+            <div className='flex flex-wrap gap-1 pt-1'>
+              {ACCESSIBILITY_OPTIONS.slice(0, 3).map((opt) => (
+                <button
+                  key={opt.value}
+                  type='button'
+                  onClick={() =>
+                    setValue(`guestParty.${guestIndex}.accessibilityRequirements`, opt.value, {
+                      shouldDirty: true,
+                    })
+                  }
+                  className='rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-[0.65rem] text-muted-foreground hover:bg-muted hover:text-foreground'
+                >
+                  {opt.value}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className='flex items-center justify-between rounded-lg border bg-muted/50 p-4'>

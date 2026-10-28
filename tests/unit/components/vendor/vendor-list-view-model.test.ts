@@ -63,7 +63,7 @@ describe('vendor-list-view-model', () => {
       makeVendor({ id: 'd', category: VendorCategory.PHOTOGRAPHER, status: VendorStatus.DECLINED }),
     ])
 
-    expect(summary).toEqual({ booked: 1, deciding: 2, categoriesToFill: 4 })
+    expect(summary).toEqual({ booked: 1, deciding: 2, categoriesToFill: 10 })
   })
 
   it('counts vendors per category in display order', () => {

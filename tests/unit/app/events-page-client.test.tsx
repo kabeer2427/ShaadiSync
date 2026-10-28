@@ -124,6 +124,7 @@ const baseEvent: EventWithStats = {
   venue: null,
   attire: null,
   description: null,
+  notes: null,
   weddingId: 'wed-1',
   collectRsvp: true,
   createdAt: new Date('2026-01-01T00:00:00.000Z'),

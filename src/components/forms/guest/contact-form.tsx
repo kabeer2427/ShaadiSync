@@ -85,6 +85,33 @@ export default function ContactForm({ register, errors }: ContactFormProps) {
           {errors.country && <p className='text-destructive text-sm'>{errors.country.message}</p>}
         </div>
       </div>
+
+      <div className='space-y-2 rounded-lg border border-border/70 bg-muted/30 p-3.5'>
+        <div className='flex items-center justify-between'>
+          <Label htmlFor='household-maxAccompanyingGuests' className='font-medium text-sm'>
+            Accompanying Guests Limit
+          </Label>
+          <span className='font-mono text-[0.65rem] text-muted-foreground uppercase tracking-wider'>
+            Organizer Limit
+          </span>
+        </div>
+        <Input
+          id='household-maxAccompanyingGuests'
+          type='number'
+          min='0'
+          max='50'
+          {...register('maxAccompanyingGuests', { valueAsNumber: true })}
+          placeholder='0'
+          className={errors.maxAccompanyingGuests ? 'border-destructive' : ''}
+        />
+        {errors.maxAccompanyingGuests && (
+          <p className='text-destructive text-sm'>{errors.maxAccompanyingGuests.message}</p>
+        )}
+        <p className='text-muted-foreground text-xs'>
+          Maximum number of accompanying guests (tag-alongs or plus-ones) this family or household
+          is permitted to bring.
+        </p>
+      </div>
     </div>
   )
 }

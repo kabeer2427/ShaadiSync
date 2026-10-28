@@ -200,6 +200,54 @@ describe('HouseholdManagementService', () => {
     )
   })
 
+  it('rejects create when tag-along count exceeds maxAccompanyingGuests limit', async () => {
+    await expect(
+      service.createHouseholdWithGuests(actorContext, 'wedding-123', {
+        maxAccompanyingGuests: 1,
+        guestParty: [
+          { firstName: 'John', lastName: 'Doe', isTagAlong: false, invites: {} },
+          { firstName: 'Guest', lastName: 'Plus1', isTagAlong: true, invites: {} },
+          { firstName: 'Guest', lastName: 'Plus2', isTagAlong: true, invites: {} },
+        ],
+      })
+    ).rejects.toMatchObject({
+      code: 'BAD_REQUEST',
+      message: expect.stringContaining('exceeds the allowed limit of 1'),
+    })
+
+    expect(mockDb.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('passes dietaryPreferences and accessibilityRequirements when creating guests', async () => {
+    await service.createHouseholdWithGuests(actorContext, 'wedding-123', {
+      maxAccompanyingGuests: 2,
+      guestParty: [
+        {
+          firstName: 'Aarav',
+          lastName: 'Patel',
+          dietaryPreferences: 'Jain Vegetarian',
+          accessibilityRequirements: 'Wheelchair access',
+          invites: { 'event-123': 'Invited' },
+        },
+      ],
+    })
+
+    expect(mockCreateWithGifts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        weddingId: 'wedding-123',
+        maxAccompanyingGuests: 2,
+      }),
+      ['event-123']
+    )
+    expect(mockGuestCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstName: 'Aarav',
+        dietaryPreferences: 'Jain Vegetarian',
+        accessibilityRequirements: 'Wheelchair access',
+      })
+    )
+  })
+
   it('creates default not-invited rows for a new household when invites are empty', async () => {
     await service.createHouseholdWithGuests(actorContext, 'wedding-123', {
       address1: '123 Main St',

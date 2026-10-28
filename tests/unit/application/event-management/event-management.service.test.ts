@@ -87,9 +87,18 @@ describe('EventManagementService', () => {
     mockDb._tx.event.create.mockResolvedValue(mockEvent)
     mockDb._tx.guest.findMany.mockResolvedValue([])
     mockDb._tx.invitation.createMany.mockResolvedValue({ count: 0 })
-    await service.createEvent(actorContext, 'wedding-123', { eventName: 'Ceremony' })
+    await service.createEvent(actorContext, 'wedding-123', {
+      eventName: 'Ceremony',
+      notes: 'Prepare havan samagri and varmala garlands',
+    })
 
     expect(mockRequirePermission).toHaveBeenCalledWith(actorContext, { event: ['create'] })
+    expect(mockDb._tx.event.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        name: 'Ceremony',
+        notes: 'Prepare havan samagri and varmala garlands',
+      }),
+    })
     expect(mockEnsureSeededFn).toHaveBeenCalledWith('wedding-123', mockDb._tx)
   })
 
@@ -99,10 +108,18 @@ describe('EventManagementService', () => {
 
     await service.updateEvent(actorContext, 'wedding-123', {
       eventId: 'event-123',
-      eventName: 'Updated',
+      eventName: 'Updated Ceremony',
+      notes: 'Updated priest arrival time and sound cues',
     })
 
     expect(mockRequirePermission).toHaveBeenCalledWith(actorContext, { event: ['update'] })
+    expect(mockDb._tx.event.update).toHaveBeenCalledWith({
+      where: { id: 'event-123' },
+      data: expect.objectContaining({
+        name: 'Updated Ceremony',
+        notes: 'Updated priest arrival time and sound cues',
+      }),
+    })
   })
 
   it('requires event delete permission before deleting', async () => {

@@ -289,6 +289,87 @@ function RsvpCard({ dashboardData }: { dashboardData: DashboardData | null }) {
   )
 }
 
+function UpcomingEventsCard({ events }: { events: EventWithStats[] }) {
+  const sortedEvents = useMemo(() => {
+    return [...events].sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0
+      const dateB = b.date ? new Date(b.date).getTime() : 0
+      return dateA - dateB
+    })
+  }, [events])
+
+  if (sortedEvents.length === 0) {
+    return (
+      <Panel id='events' title='Ceremonies & Events' action='Add events →' actionHref='/events'>
+        <div className='flex flex-col gap-3'>
+          <p className='font-medium text-foreground text-sm'>No ceremonies scheduled</p>
+          <EmptyNote>Plan your Roka, Haldi, Mehendi, Sangeet, Wedding, and Reception.</EmptyNote>
+          <Link href='/events' className={`${outlineLinkClass} self-start`}>
+            Add ceremonies →
+          </Link>
+        </div>
+      </Panel>
+    )
+  }
+
+  return (
+    <Panel
+      id='events'
+      title='Ceremonies & Events'
+      action='View all →'
+      actionHref='/events'
+      aside={<span className='text-muted-foreground text-sm'>{sortedEvents.length} scheduled</span>}
+    >
+      <div className='flex flex-col divide-y divide-border/60'>
+        {sortedEvents.slice(0, 4).map((event) => {
+          const dateStr = event.date
+            ? new Intl.DateTimeFormat('en-IN', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+              }).format(new Date(event.date))
+            : 'Date TBD'
+          const timeStr = event.startTime
+            ? event.endTime
+              ? `${event.startTime} - ${event.endTime}`
+              : event.startTime
+            : null
+
+          const responses = (event as unknown as EventWithResponses).guestResponses
+
+          return (
+            <div key={event.id} className='flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0'>
+              <div className='flex items-center justify-between gap-2'>
+                <span className='font-medium text-foreground text-sm'>{event.name}</span>
+                {event.attire && (
+                  <span className='rounded-full bg-secondary/80 px-2 py-0.5 font-medium text-[11px] text-muted-foreground'>
+                    {event.attire}
+                  </span>
+                )}
+              </div>
+              <div className='flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs'>
+                <span>{[dateStr, timeStr].filter(Boolean).join(' · ')}</span>
+                {event.venue && <span>· {event.venue}</span>}
+                {responses && event.collectRsvp && (
+                  <span className='font-medium text-primary'>
+                    · {responses.attending} attending ({responses.invited} pending)
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      {sortedEvents.length > 4 && (
+        <p className='mt-3 text-muted-foreground text-xs'>
+          + {sortedEvents.length - 4} more event{sortedEvents.length - 4 > 1 ? 's' : ''} in your
+          schedule
+        </p>
+      )}
+    </Panel>
+  )
+}
+
 function BudgetCard() {
   const { data: overview, isLoading } = api.budget.getOverview.useQuery()
 
@@ -308,7 +389,7 @@ function BudgetCard() {
   const hasCategories = (overview?.categories.length ?? 0) > 0
   const hasBudget = hasTarget || hasCategories
 
-  if (!hasBudget) {
+  if (!overview || !hasBudget) {
     return (
       <Panel id='budget' title='Budget' action='Manage →' actionHref='/budget'>
         <div className='flex flex-col gap-3'>
@@ -322,10 +403,10 @@ function BudgetCard() {
     )
   }
 
-  const currency = overview!.currency
-  const { netSpend, remaining, actualSpend } = overview!.summary
-  const target = overview!.targetTotal
-  const categoryCount = overview!.categories.length
+  const currency = overview.currency
+  const { netSpend, remaining, actualSpend } = overview.summary
+  const target = overview.targetTotal
+  const categoryCount = overview.categories.length
   const pct = target > 0 ? Math.min(100, Math.round((netSpend / target) * 100)) : 0
   const overBudget = target > 0 && netSpend > target
 
@@ -350,11 +431,19 @@ function BudgetCard() {
             />
           </div>
         )}
-        <p className={`text-sm ${overBudget ? 'text-destructive' : 'text-muted-foreground'}`}>
-          {formatCurrency(actualSpend, currency)} spent ·{' '}
-          {target > 0
-            ? `${formatCurrency(remaining, currency)} remaining`
-            : `${categoryCount} section${categoryCount !== 1 ? 's' : ''}`}
+        <p
+          className={`text-sm ${overBudget ? 'font-medium text-destructive' : 'text-muted-foreground'}`}
+        >
+          {overBudget ? (
+            <span>⚠ Exceeded by {formatCurrency(Math.abs(remaining), currency)}</span>
+          ) : (
+            <>
+              {formatCurrency(actualSpend, currency)} spent ·{' '}
+              {target > 0
+                ? `${formatCurrency(remaining, currency)} remaining`
+                : `${categoryCount} section${categoryCount !== 1 ? 's' : ''}`}
+            </>
+          )}
         </p>
       </div>
     </Panel>
@@ -565,6 +654,7 @@ export default function PlanningOverview({ dashboardData }: PlanningOverviewProp
         <div className='flex flex-wrap items-start gap-6'>
           <div className='flex min-w-0 flex-[2_1_520px] flex-col gap-6'>
             <PlanningTasks dashboardData={dashboardData} />
+            <UpcomingEventsCard events={events} />
             <MilestonesCard dashboardData={dashboardData} />
           </div>
           <div className='flex min-w-0 flex-[1_1_280px] flex-col gap-4'>

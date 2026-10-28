@@ -162,6 +162,7 @@ export class EventRepository {
     venue?: string
     attire?: string
     description?: string
+    notes?: string
     collectRsvp?: boolean
     allowTagAlongs?: boolean
   }): Promise<Event> {
@@ -175,6 +176,7 @@ export class EventRepository {
         venue: data.venue,
         attire: data.attire,
         description: data.description,
+        notes: data.notes,
         collectRsvp: data.collectRsvp ?? false,
         allowTagAlongs: data.allowTagAlongs ?? false,
       },
@@ -194,6 +196,7 @@ export class EventRepository {
       venue?: string
       attire?: string
       description?: string
+      notes?: string
       allowTagAlongs?: boolean
     }
   ): Promise<Event> {
@@ -207,6 +210,7 @@ export class EventRepository {
         venue: data.venue,
         attire: data.attire,
         description: data.description,
+        notes: data.notes,
         allowTagAlongs: data.allowTagAlongs,
       },
     })

@@ -344,4 +344,19 @@ describe('phone validation in guest schemas', () => {
       expect(result.data.phone).toBeNull()
     }
   })
+
+  it('validates dietaryPreferences and accessibilityRequirements', () => {
+    const result = guestPartySchema.safeParse({
+      firstName: 'Aarav',
+      lastName: 'Sharma',
+      dietaryPreferences: 'Jain Vegetarian (No onion, no garlic)',
+      accessibilityRequirements: 'Wheelchair ramp access required',
+      invites: { 'event-1': 'Invited' },
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.dietaryPreferences).toBe('Jain Vegetarian (No onion, no garlic)')
+      expect(result.data.accessibilityRequirements).toBe('Wheelchair ramp access required')
+    }
+  })
 })

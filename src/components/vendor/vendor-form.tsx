@@ -22,23 +22,35 @@ type VendorCategory = Vendor['category']
 const VENDOR_CATEGORIES = [
   'VENUE',
   'CATERING',
+  'DECOR_LIGHTING',
   'PHOTOGRAPHER',
   'VIDEOGRAPHER',
+  'MEHENDI',
+  'MAKEUP_HAIR',
+  'PANDIT_PRIEST',
   'MUSIC',
   'FLOWERS',
+  'ATTIRE_JEWELRY',
+  'TRANSPORTATION',
   'ACCOMMODATION',
   'OTHER',
 ] satisfies VendorCategory[]
 
 const CATEGORY_LABELS: Record<VendorCategory, string> = {
   VENUE: 'Venue',
-  CATERING: 'Catering',
-  PHOTOGRAPHER: 'Photographer',
-  VIDEOGRAPHER: 'Videographer',
-  MUSIC: 'Music',
-  FLOWERS: 'Flowers',
-  ACCOMMODATION: 'Accommodation',
-  OTHER: 'Other',
+  CATERING: 'Catering & Food',
+  DECOR_LIGHTING: 'Decor & Lighting',
+  PHOTOGRAPHER: 'Photography',
+  VIDEOGRAPHER: 'Cinematography & Video',
+  MEHENDI: 'Mehendi Artist',
+  MAKEUP_HAIR: 'Bridal Makeup & Hair',
+  PANDIT_PRIEST: 'Pandit / Priest',
+  MUSIC: 'DJ, Sangeet & Sound',
+  FLOWERS: 'Florals & Garlands',
+  ATTIRE_JEWELRY: 'Attire & Jewelry',
+  TRANSPORTATION: 'Baraat & Logistics',
+  ACCOMMODATION: 'Guest Accommodation',
+  OTHER: 'Other Services',
 }
 
 type VendorFormBaseProps = {

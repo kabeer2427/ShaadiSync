@@ -23,6 +23,7 @@ export const mockHousehold: Household = {
   country: 'USA',
   likelihoodOfAttending: null,
   notes: 'Family of the groom',
+  maxAccompanyingGuests: 0,
 }
 
 export const mockHouseholdWithGuestsAndGifts: HouseholdWithGuestsAndGifts = {
@@ -39,6 +40,8 @@ export const mockHouseholdWithGuestsAndGifts: HouseholdWithGuestsAndGifts = {
       isPrimaryContact: true,
       isTagAlong: false,
       ageGroup: 'ADULT',
+      dietaryPreferences: null,
+      accessibilityRequirements: null,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
       invitations: [
@@ -68,6 +71,8 @@ export const mockHouseholdWithGuestsAndGifts: HouseholdWithGuestsAndGifts = {
       isPrimaryContact: false,
       isTagAlong: false,
       ageGroup: 'ADULT',
+      dietaryPreferences: null,
+      accessibilityRequirements: null,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
       invitations: [

@@ -143,6 +143,7 @@ export class HouseholdRepository {
     zipCode?: string | null
     likelihoodOfAttending?: number | null
     notes?: string | null
+    maxAccompanyingGuests?: number | null
   }): Promise<Household> {
     return this.db.household.create({
       data: {
@@ -155,6 +156,7 @@ export class HouseholdRepository {
         zipCode: data.zipCode,
         likelihoodOfAttending: data.likelihoodOfAttending,
         notes: data.notes,
+        maxAccompanyingGuests: data.maxAccompanyingGuests ?? 0,
       },
     })
   }
@@ -173,6 +175,7 @@ export class HouseholdRepository {
       zipCode?: string | null
       likelihoodOfAttending?: number | null
       notes?: string | null
+      maxAccompanyingGuests?: number | null
     },
     eventIds: string[]
   ): Promise<HouseholdWithGuestsAndGifts> {
@@ -187,6 +190,7 @@ export class HouseholdRepository {
         zipCode: data.zipCode,
         likelihoodOfAttending: data.likelihoodOfAttending,
         notes: data.notes,
+        maxAccompanyingGuests: data.maxAccompanyingGuests ?? 0,
         gifts: {
           createMany: {
             data: eventIds.map((eventId) => ({
@@ -232,6 +236,7 @@ export class HouseholdRepository {
       zipCode?: string | null
       likelihoodOfAttending?: number | null
       notes?: string | null
+      maxAccompanyingGuests?: number | null
     }
   ): Promise<Household> {
     return this.db.household.update({
@@ -245,6 +250,7 @@ export class HouseholdRepository {
         zipCode: data.zipCode ?? undefined,
         likelihoodOfAttending: data.likelihoodOfAttending ?? undefined,
         notes: data.notes ?? undefined,
+        maxAccompanyingGuests: data.maxAccompanyingGuests ?? undefined,
       },
     })
   }

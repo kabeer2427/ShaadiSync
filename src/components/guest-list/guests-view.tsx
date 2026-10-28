@@ -442,6 +442,8 @@ export default function GuestsView({
                           householdId: household.id,
                           weddingId: household.weddingId,
                           isTagAlong: false,
+                          dietaryPreferences: null,
+                          accessibilityRequirements: null,
                           createdAt: household.createdAt,
                           updatedAt: household.updatedAt,
                           guestTags: [],

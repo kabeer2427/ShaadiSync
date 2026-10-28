@@ -3,6 +3,7 @@
  */
 
 import {
+  INDIAN_EVENT_PRESETS,
   QUESTION_TYPE,
   QUESTION_TYPE_VALUES,
   ROUTES,
@@ -58,5 +59,28 @@ describe('ROUTES', () => {
   it('should generate correct wedding routes', () => {
     expect(ROUTES.WEDDING.HOME('testcouple')).toBe('/testcouple')
     expect(ROUTES.WEDDING.RSVP('testcouple')).toBe('/testcouple/rsvp')
+  })
+})
+
+describe('INDIAN_EVENT_PRESETS', () => {
+  it('should provide presets for key Indian wedding ceremonies', () => {
+    const presetIds = INDIAN_EVENT_PRESETS.map((p) => p.id)
+    expect(presetIds).toContain('roka')
+    expect(presetIds).toContain('haldi')
+    expect(presetIds).toContain('mehendi')
+    expect(presetIds).toContain('sangeet')
+    expect(presetIds).toContain('wedding')
+    expect(presetIds).toContain('reception')
+    expect(INDIAN_EVENT_PRESETS.length).toBeGreaterThanOrEqual(6)
+  })
+
+  it('each preset should define name, suggestedAttire, description, and suggestedNotes', () => {
+    for (const preset of INDIAN_EVENT_PRESETS) {
+      expect(preset.name).toBeTruthy()
+      expect(preset.suggestedAttire).toBeTruthy()
+      expect(preset.description).toBeTruthy()
+      expect(preset.suggestedNotes).toBeTruthy()
+      expect(['pre-wedding', 'ceremony', 'post-wedding']).toContain(preset.category)
+    }
   })
 })

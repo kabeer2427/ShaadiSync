@@ -36,6 +36,7 @@ export const createEventSchema = z
     venue: z.string().optional(),
     attire: z.string().optional(),
     description: z.string().optional(),
+    notes: z.string().optional(),
     collectRsvp: z.boolean().default(false),
     allowTagAlongs: z.boolean().default(false),
   })
@@ -60,6 +61,7 @@ export const updateEventSchema = z
     venue: z.string().optional(),
     attire: z.string().optional(),
     description: z.string().optional(),
+    notes: z.string().optional(),
     collectRsvp: z.boolean().optional(),
     allowTagAlongs: z.boolean().optional(),
   })

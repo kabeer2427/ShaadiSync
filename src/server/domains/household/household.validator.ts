@@ -39,6 +39,7 @@ export const baseHouseholdFields = z.object({
   email: z.string().email({ message: 'Not a valid email' }).nullish().optional(),
   notes: z.string().nullish().optional(),
   likelihoodOfAttending: z.number().int().min(1).max(5).nullish().optional(),
+  maxAccompanyingGuests: z.number().int().min(0).max(50).nullish().optional(),
 })
 
 /**

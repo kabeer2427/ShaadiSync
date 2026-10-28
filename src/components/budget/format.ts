@@ -6,7 +6,8 @@ function getFormatter(currency: string, whole: boolean): Intl.NumberFormat {
   const key = `${currency}-${whole}`
   let formatter = formatterCache.get(key)
   if (!formatter) {
-    formatter = new Intl.NumberFormat('en-US', {
+    const locale = currency === 'INR' ? 'en-IN' : 'en-US'
+    formatter = new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
       maximumFractionDigits: whole ? 0 : 2,

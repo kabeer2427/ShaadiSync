@@ -9,7 +9,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon, Clock } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, Sparkles } from 'lucide-react'
 import { useEffect } from 'react'
 import { type Resolver, type SubmitHandler, useForm } from 'react-hook-form'
 
@@ -33,6 +33,7 @@ import { Label } from '~/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { Switch } from '~/components/ui/switch'
 import { Textarea } from '~/components/ui/textarea'
+import { INDIAN_EVENT_PRESETS, type IndianWeddingEventPreset } from '~/lib/constants'
 import { cn } from '~/lib/utils'
 import type { Event } from '~/server/domains/event/event.types'
 
@@ -75,6 +76,7 @@ export function ModernEventForm({
           venue: event.venue ?? '',
           attire: event.attire ?? '',
           description: event.description ?? '',
+          notes: event.notes ?? '',
           collectRsvp: event.collectRsvp ?? false,
           allowTagAlongs: event.allowTagAlongs ?? false,
         }
@@ -84,6 +86,13 @@ export function ModernEventForm({
   const { register, handleSubmit, formState, setValue, watch } = form
   const { errors, isDirty } = formState
   const dateValue = watch('date')
+
+  const handleSelectPreset = (preset: IndianWeddingEventPreset) => {
+    setValue('eventName', preset.name, { shouldDirty: true, shouldValidate: true })
+    setValue('attire', preset.suggestedAttire, { shouldDirty: true, shouldValidate: true })
+    setValue('description', preset.description, { shouldDirty: true, shouldValidate: true })
+    setValue('notes', preset.suggestedNotes, { shouldDirty: true, shouldValidate: true })
+  }
 
   const handleFormSubmit: SubmitHandler<EventFormData> = async (data) => {
     await onSubmit(data)
@@ -105,6 +114,7 @@ export function ModernEventForm({
               venue: event.venue ?? '',
               attire: event.attire ?? '',
               description: event.description ?? '',
+              notes: event.notes ?? '',
               collectRsvp: event.collectRsvp ?? false,
               allowTagAlongs: event.allowTagAlongs ?? false,
             }
@@ -126,9 +136,36 @@ export function ModernEventForm({
           <DialogDescription className='text-sm'>
             {isEditMode
               ? 'Update the details for your wedding event.'
-              : 'Add a new event like ceremony, reception, or rehearsal dinner.'}
+              : 'Add a new ceremony or function to your multi-event Indian wedding.'}
           </DialogDescription>
         </DialogHeader>
+
+        {!isEditMode && (
+          <div className='rounded-lg border border-amber-500/25 bg-amber-500/5 p-3'>
+            <div className='flex items-center gap-1.5 font-medium text-amber-700 text-xs dark:text-amber-300'>
+              <Sparkles className='h-3.5 w-3.5 shrink-0' />
+              <span>Indian Wedding Traditions (Quick Presets)</span>
+            </div>
+            <p className='mt-1 text-[0.75rem] text-muted-foreground'>
+              Click a celebration to auto-fill title, suggested attire, description, and ritual
+              notes:
+            </p>
+            <div className='mt-2.5 flex flex-wrap gap-1.5'>
+              {INDIAN_EVENT_PRESETS.map((preset) => (
+                <Button
+                  key={preset.id}
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={() => handleSelectPreset(preset)}
+                  className='h-7 rounded-full border-amber-500/30 bg-background/80 px-2.5 text-xs hover:border-amber-500/60 hover:bg-amber-500/10'
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-4 md:space-y-6'>
           {/* Event Name */}
@@ -280,6 +317,33 @@ export function ModernEventForm({
             {errors.description && (
               <p className='text-destructive text-xs md:text-sm'>{errors.description.message}</p>
             )}
+          </div>
+
+          {/* Organizer Notes (Internal Only) */}
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <Label htmlFor='notes' className='text-sm md:text-base'>
+                Organizer Notes
+              </Label>
+              <span className='font-mono text-[0.65rem] text-muted-foreground uppercase tracking-wider'>
+                Internal Only
+              </span>
+            </div>
+            <Textarea
+              id='notes'
+              {...register('notes')}
+              placeholder='Logistics, rituals, puja items (havan, thali, garlands), stage cues, or vendor notes...'
+              rows={2}
+              disabled={isSubmitting}
+              className={cn(errors.notes && 'border-destructive', 'resize-none')}
+            />
+            {errors.notes && (
+              <p className='text-destructive text-xs md:text-sm'>{errors.notes.message}</p>
+            )}
+            <p className='text-[0.75rem] text-muted-foreground'>
+              Private for organizers and planning teams — never visible on guest invitations or
+              public RSVPs.
+            </p>
           </div>
 
           {/* Collect RSVPs */}

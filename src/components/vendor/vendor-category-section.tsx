@@ -6,21 +6,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/u
 import { VendorCard } from '~/components/vendor/vendor-card'
 import { VendorCategoryConfigEditor } from '~/components/vendor/vendor-category-config-editor'
 import { VendorForm } from '~/components/vendor/vendor-form'
-import { STATUS_SORT_ORDER } from '~/components/vendor/vendor-list-view-model'
+import {
+  STATUS_SORT_ORDER,
+  VENDOR_CATEGORY_LABELS,
+} from '~/components/vendor/vendor-list-view-model'
 import type { VendorWithQuotes } from '~/server/domains/vendor/vendor.types'
 
 type VendorCategory = VendorWithQuotes['category']
 
-const CATEGORY_LABELS: Record<VendorCategory, string> = {
-  VENUE: 'Venue',
-  CATERING: 'Catering',
-  PHOTOGRAPHER: 'Photographer',
-  VIDEOGRAPHER: 'Videographer',
-  MUSIC: 'Music',
-  FLOWERS: 'Flowers',
-  ACCOMMODATION: 'Accommodation',
-  OTHER: 'Other',
-}
+const CATEGORY_LABELS = VENDOR_CATEGORY_LABELS
 
 export { STATUS_SORT_ORDER }
 

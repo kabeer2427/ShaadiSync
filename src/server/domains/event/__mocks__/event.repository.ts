@@ -15,6 +15,7 @@ export const mockEvent: Event = {
   venue: 'Beautiful Garden',
   attire: 'Formal',
   description: 'Our special day!',
+  notes: null,
   weddingId: 'wedding-123',
   collectRsvp: true,
   allowTagAlongs: false,

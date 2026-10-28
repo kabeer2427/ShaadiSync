@@ -17,6 +17,8 @@ export const mockGuest: Guest = {
   isPrimaryContact: true,
   isTagAlong: false,
   ageGroup: 'ADULT',
+  dietaryPreferences: null,
+  accessibilityRequirements: null,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
 }

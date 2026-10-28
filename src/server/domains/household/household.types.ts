@@ -35,6 +35,7 @@ export type Household = {
   country: string | null
   likelihoodOfAttending: number | null
   notes: string | null
+  maxAccompanyingGuests: number | null
 }
 
 /**

@@ -250,6 +250,18 @@ export function GuestDetailPanelContent(props: Readonly<GuestDetailPanelContentP
                     <p className='font-mono text-[0.55rem] text-foreground/55 uppercase tracking-wider'>
                       {(guest.ageGroup ?? 'ADULT').toLowerCase()}
                     </p>
+                    {matchedGuest?.dietaryPreferences && (
+                      <p className='text-[0.7rem] text-muted-foreground'>
+                        <span className='font-medium text-foreground/75'>Diet:</span>{' '}
+                        {matchedGuest.dietaryPreferences}
+                      </p>
+                    )}
+                    {matchedGuest?.accessibilityRequirements && (
+                      <p className='text-[0.7rem] text-muted-foreground'>
+                        <span className='font-medium text-foreground/75'>Access:</span>{' '}
+                        {matchedGuest.accessibilityRequirements}
+                      </p>
+                    )}
                   </div>
                   <div className='flex items-center gap-1.5'>
                     {guest.isPrimaryContact ? (
@@ -265,6 +277,15 @@ export function GuestDetailPanelContent(props: Readonly<GuestDetailPanelContentP
               )
             })}
           </ul>
+          {selectedHousehold.maxAccompanyingGuests !== undefined &&
+            selectedHousehold.maxAccompanyingGuests !== null && (
+              <div className='mt-2 flex items-center justify-between rounded border border-border/60 border-dashed bg-muted/30 px-2.5 py-1.5 text-muted-foreground text-xs'>
+                <span>Allowed Accompanying Guests (Limit):</span>
+                <span className='font-semibold text-foreground'>
+                  {selectedHousehold.maxAccompanyingGuests}
+                </span>
+              </div>
+            )}
         </GuestDetailSection>
 
         <GuestDetailSection

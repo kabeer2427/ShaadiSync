@@ -81,6 +81,8 @@ export class GuestRepository {
     isPrimaryContact?: boolean
     ageGroup?: GuestAgeGroup | null
     isTagAlong?: boolean
+    dietaryPreferences?: string | null
+    accessibilityRequirements?: string | null
     invitations?: Array<{
       eventId: string
       rsvp: string
@@ -99,6 +101,8 @@ export class GuestRepository {
         isPrimaryContact: data.isPrimaryContact ?? false,
         ageGroup: data.ageGroup ?? null,
         isTagAlong: data.isTagAlong ?? false,
+        dietaryPreferences: data.dietaryPreferences ?? null,
+        accessibilityRequirements: data.accessibilityRequirements ?? null,
         invitations: data.invitations
           ? {
               createMany: {
@@ -130,6 +134,8 @@ export class GuestRepository {
       ageGroup?: GuestAgeGroup | null
       isPrimaryContact?: boolean
       isTagAlong?: boolean
+      dietaryPreferences?: string | null
+      accessibilityRequirements?: string | null
     }
   ): Promise<Guest> {
     return this.db.guest.update({
@@ -142,6 +148,8 @@ export class GuestRepository {
         ageGroup: data.ageGroup,
         isPrimaryContact: data.isPrimaryContact,
         isTagAlong: data.isTagAlong,
+        dietaryPreferences: data.dietaryPreferences,
+        accessibilityRequirements: data.accessibilityRequirements,
       },
     })
   }
@@ -162,6 +170,8 @@ export class GuestRepository {
       isPrimaryContact?: boolean
       ageGroup?: GuestAgeGroup | null
       isTagAlong?: boolean
+      dietaryPreferences?: string | null
+      accessibilityRequirements?: string | null
     },
     invitations?: Array<{
       eventId: string
@@ -180,6 +190,8 @@ export class GuestRepository {
         isPrimaryContact: data.isPrimaryContact,
         ageGroup: data.ageGroup,
         isTagAlong: data.isTagAlong,
+        dietaryPreferences: data.dietaryPreferences ?? undefined,
+        accessibilityRequirements: data.accessibilityRequirements ?? undefined,
       },
       create: {
         firstName: data.firstName,
@@ -191,6 +203,8 @@ export class GuestRepository {
         isPrimaryContact: data.isPrimaryContact ?? false,
         ageGroup: data.ageGroup ?? null,
         isTagAlong: data.isTagAlong ?? false,
+        dietaryPreferences: data.dietaryPreferences ?? null,
+        accessibilityRequirements: data.accessibilityRequirements ?? null,
         invitations: invitations
           ? {
               createMany: {

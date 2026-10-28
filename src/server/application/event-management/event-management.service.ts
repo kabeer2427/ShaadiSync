@@ -45,6 +45,7 @@ export class EventManagementService {
       venue,
       attire,
       description,
+      notes,
       collectRsvp,
       allowTagAlongs,
     } = data
@@ -60,6 +61,7 @@ export class EventManagementService {
           venue,
           attire,
           description,
+          notes,
           collectRsvp: collectRsvp ?? false,
           allowTagAlongs: allowTagAlongs ?? false,
         },
@@ -140,6 +142,7 @@ export class EventManagementService {
           venue: data.venue,
           attire: data.attire,
           description: data.description,
+          notes: data.notes,
           collectRsvp: data.collectRsvp,
           allowTagAlongs: data.allowTagAlongs,
         },

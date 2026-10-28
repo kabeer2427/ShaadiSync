@@ -47,6 +47,18 @@ export class HouseholdManagementService {
       weddingId
     )
 
+    const tagAlongCount = data.guestParty.filter((guest) => guest.isTagAlong).length
+    if (
+      data.maxAccompanyingGuests !== undefined &&
+      data.maxAccompanyingGuests !== null &&
+      tagAlongCount > data.maxAccompanyingGuests
+    ) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Number of accompanying guests (${tagAlongCount}) exceeds the allowed limit of ${data.maxAccompanyingGuests}.`,
+      })
+    }
+
     return this.db.$transaction(async (tx) => {
       const txHouseholdRepo = new HouseholdRepository(tx)
       const txGuestRepo = new GuestRepository(tx)
@@ -75,6 +87,7 @@ export class HouseholdManagementService {
           zipCode: data.zipCode,
           likelihoodOfAttending: data.likelihoodOfAttending,
           notes: data.notes,
+          maxAccompanyingGuests: data.maxAccompanyingGuests,
         },
         eventIds
       )
@@ -110,6 +123,8 @@ export class HouseholdManagementService {
             isPrimaryContact: isTagAlong ? false : (guest.isPrimaryContact ?? index === 0),
             ageGroup: guest.ageGroup ?? null,
             isTagAlong,
+            dietaryPreferences: guest.dietaryPreferences ?? null,
+            accessibilityRequirements: guest.accessibilityRequirements ?? null,
             invitations,
             tagIds: guest.tagIds ?? [],
           })
@@ -161,6 +176,18 @@ export class HouseholdManagementService {
       weddingId
     )
 
+    const tagAlongCount = data.guestParty.filter((guest) => guest.isTagAlong).length
+    if (
+      data.maxAccompanyingGuests !== undefined &&
+      data.maxAccompanyingGuests !== null &&
+      tagAlongCount > data.maxAccompanyingGuests
+    ) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Number of accompanying guests (${tagAlongCount}) exceeds the allowed limit of ${data.maxAccompanyingGuests}.`,
+      })
+    }
+
     return this.db.$transaction(async (tx) => {
       const txHouseholdRepo = new HouseholdRepository(tx)
       const txGuestRepo = new GuestRepository(tx)
@@ -186,6 +213,7 @@ export class HouseholdManagementService {
         zipCode: data.zipCode ?? undefined,
         likelihoodOfAttending: data.likelihoodOfAttending ?? undefined,
         notes: data.notes ?? undefined,
+        maxAccompanyingGuests: data.maxAccompanyingGuests ?? undefined,
       })
 
       if (data.deletedGuests && data.deletedGuests.length > 0) {
@@ -220,6 +248,8 @@ export class HouseholdManagementService {
               isPrimaryContact: isTagAlong ? false : (guest.isPrimaryContact ?? false),
               ageGroup: guest.ageGroup ?? null,
               isTagAlong,
+              dietaryPreferences: guest.dietaryPreferences ?? null,
+              accessibilityRequirements: guest.accessibilityRequirements ?? null,
             },
             invitations
           )

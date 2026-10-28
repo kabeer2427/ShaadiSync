@@ -28,6 +28,7 @@ export type Event = {
   venue: string | null
   attire: string | null
   description: string | null
+  notes: string | null
   weddingId: string
   collectRsvp: boolean
   allowTagAlongs: boolean

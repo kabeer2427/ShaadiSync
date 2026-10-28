@@ -10,10 +10,14 @@ import type { Event as ServerEvent } from '~/server/domains/event/event.types'
  * Differences from the server type:
  * - Adds `questions` (always present in client views)
  * - Omits `createdAt`/`updatedAt` (not needed in client)
- * - Relaxes `collectRsvp`/`allowTagAlongs` to optional (form contexts may not set them)
+ * - Relaxes `collectRsvp`/`allowTagAlongs`/`notes` to optional (public RSVP views & form contexts may not include them)
  */
-type Event = Omit<ServerEvent, 'createdAt' | 'updatedAt' | 'collectRsvp' | 'allowTagAlongs'> & {
+type Event = Omit<
+  ServerEvent,
+  'createdAt' | 'updatedAt' | 'collectRsvp' | 'allowTagAlongs' | 'notes'
+> & {
   questions: Question[]
+  notes?: string | null
   collectRsvp?: boolean
   allowTagAlongs?: boolean
 }
@@ -50,6 +54,7 @@ type Household = {
   zipCode: string | null
   country: string | null
   notes: string | null
+  maxAccompanyingGuests?: number | null
   gifts: Gift[]
   guests: Guest[]
 }
@@ -75,6 +80,8 @@ type Guest = {
   householdId: string
   ageGroup: 'INFANT' | 'CHILD' | 'TEEN' | 'ADULT' | null
   isTagAlong: boolean
+  dietaryPreferences: string | null
+  accessibilityRequirements: string | null
   createdAt: Date
   updatedAt: Date
   invitations?: Invitation[]
@@ -118,6 +125,7 @@ type EventFormData = {
   venue: string | undefined
   attire: string | undefined
   description: string | undefined
+  notes?: string | undefined
   eventId: string
   allowTagAlongs?: boolean
 }
