@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/kabeer2427/ShaadiSync/compare/oswp-v0.3.0...oswp-v0.4.0) (2026-10-28)
+
+
+### Features
+
+* complete Indian wedding planning model (multi-event, guests, budget, vendors, dashboard) ([a02ff46](https://github.com/kabeer2427/ShaadiSync/commit/a02ff46a10347ccc1b671dd34c2a1c42c412d2b2))
+* initial commit of ShaadiSync application baseline ([4a52de7](https://github.com/kabeer2427/ShaadiSync/commit/4a52de79b0dfd25b9ca420c35f8d4428033b7bc9))
+
 ## [0.3.0](https://github.com/dccakes/SCV/compare/oswp-v0.2.0...oswp-v0.3.0) (2026-04-06)
 
 
